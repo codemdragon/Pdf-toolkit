@@ -12,269 +12,333 @@
 <title>PDFKit — PDF Tools</title>
 
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
+  /* ─── DARK THEME (default) ───────────────────── */
   :root {
-    --bg: #0f0f11;
-    --surface: #1a1a1f;
-    --surface2: #222228;
-    --surface3: #2a2a32;
-    --border: rgba(255,255,255,0.07);
-    --border2: rgba(255,255,255,0.12);
-    --text: #f0f0f2;
-    --text2: #8b8b96;
-    --text3: #5a5a62;
-    --accent: #6c63ff;
-    --accent2: #8b85ff;
-    --accent-glow: rgba(108,99,255,0.3);
-    --danger: #ff5c5c;
-    --success: #4ade80;
-    --warn: #fbbf24;
-    --radius: 18px;
-    --radius-sm: 10px;
-    --font: 'Sora', sans-serif;
-    --mono: 'JetBrains Mono', monospace;
-    --safe-top: env(safe-area-inset-top, 0px);
+    --bg:          #0c0c0e;
+    --bg2:         #111114;
+    --surface:     #1c1c21;
+    --surface2:    #252529;
+    --surface3:    #2e2e34;
+    --border:      rgba(255,255,255,0.06);
+    --border2:     rgba(255,255,255,0.1);
+    --text:        #f2f2f5;
+    --text2:       #8e8e9a;
+    --text3:       #55555f;
+    --accent:      #7c6ef7;
+    --accent2:     #9b90ff;
+    --accent-dim:  rgba(124,110,247,0.15);
+    --accent-glow: rgba(124,110,247,0.28);
+    --danger:      #ff5252;
+    --danger-dim:  rgba(255,82,82,0.12);
+    --success:     #34d399;
+    --warn:        #fbbf24;
+    --radius:      16px;
+    --radius-sm:   10px;
+    --radius-xs:   7px;
+    --font:        'Inter', sans-serif;
+    --mono:        'JetBrains Mono', monospace;
+    --safe-top:    env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --tab-h:       calc(58px + var(--safe-bottom));
+    --header-h:    calc(52px + var(--safe-top));
+    --nav-bg:      rgba(18,18,22,0.92);
+    --shadow:      0 2px 20px rgba(0,0,0,0.35);
+    color-scheme: dark;
   }
+
+  /* ─── LIGHT THEME ────────────────────────────── */
+  :root.light {
+    --bg:          #f5f5f7;
+    --bg2:         #ffffff;
+    --surface:     #ffffff;
+    --surface2:    #f0f0f4;
+    --surface3:    #e8e8ed;
+    --border:      rgba(0,0,0,0.06);
+    --border2:     rgba(0,0,0,0.1);
+    --text:        #1a1a1f;
+    --text2:       #6e6e7a;
+    --text3:       #a0a0ab;
+    --accent:      #6058e8;
+    --accent2:     #7c74f5;
+    --accent-dim:  rgba(96,88,232,0.1);
+    --accent-glow: rgba(96,88,232,0.2);
+    --danger:      #e03131;
+    --danger-dim:  rgba(224,49,49,0.08);
+    --success:     #1a9e6e;
+    --nav-bg:      rgba(245,245,247,0.92);
+    --shadow:      0 2px 20px rgba(0,0,0,0.1);
+    color-scheme: light;
+  }
+
+  /* ─── ACCENT THEMES ──────────────────────────── */
+  :root.accent-blue   { --accent: #3b82f6; --accent2: #60a5fa; --accent-dim: rgba(59,130,246,0.14); --accent-glow: rgba(59,130,246,0.25); }
+  :root.accent-rose   { --accent: #f43f5e; --accent2: #fb7185; --accent-dim: rgba(244,63,94,0.14);  --accent-glow: rgba(244,63,94,0.25); }
+  :root.accent-emerald{ --accent: #10b981; --accent2: #34d399; --accent-dim: rgba(16,185,129,0.14); --accent-glow: rgba(16,185,129,0.25); }
+  :root.accent-orange { --accent: #f97316; --accent2: #fb923c; --accent-dim: rgba(249,115,22,0.14); --accent-glow: rgba(249,115,22,0.25); }
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-  html { background: var(--bg); height: 100%; }
+  html, body { height: 100%; background: var(--bg); }
 
   body {
     font-family: var(--font);
-    background: var(--bg);
     color: var(--text);
-    min-height: 100%;
     overscroll-behavior: none;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  /* ─── LAYOUT ─────────────────────────────────── */
+  /* ─── APP SHELL ──────────────────────────────── */
   #app {
     max-width: 430px;
     margin: 0 auto;
-    min-height: 100dvh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
     position: relative;
+    background: var(--bg);
   }
 
-  /* ─── HEADER ─────────────────────────────────── */
-  header {
-    padding: calc(16px + var(--safe-top)) 24px 16px;
+  /* ─── STATUS BAR FILL ────────────────────────── */
+  #status-bar-fill {
+    height: var(--safe-top);
+    background: var(--nav-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 430px;
+    z-index: 200;
+  }
+
+  /* ─── TOP NAV BAR ────────────────────────────── */
+  #top-nav {
+    height: var(--header-h);
+    padding-top: var(--safe-top);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    position: sticky;
-    top: 0;
+    padding-left: 20px;
+    padding-right: 20px;
+    background: var(--nav-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    position: relative;
     z-index: 100;
-    background: linear-gradient(to bottom, var(--bg) 80%, transparent);
   }
 
-  .logo {
+  .nav-logo {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 9px;
   }
 
-  .logo-icon {
-    width: 34px;
-    height: 34px;
+  .nav-logo-mark {
+    width: 30px;
+    height: 30px;
     background: var(--accent);
-    border-radius: 10px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
-    box-shadow: 0 0 20px var(--accent-glow);
+    font-size: 15px;
+    box-shadow: 0 2px 10px var(--accent-glow);
+    flex-shrink: 0;
   }
 
-  .logo-text {
-    font-size: 18px;
+  .nav-logo-text {
+    font-size: 17px;
     font-weight: 700;
     letter-spacing: -0.5px;
-  }
-
-  .logo-text span { color: var(--accent2); }
-
-  .header-badge {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--text3);
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    padding: 4px 10px;
-    border-radius: 20px;
-    letter-spacing: 0.5px;
-  }
-
-  /* ─── MAIN CONTENT ───────────────────────────── */
-  main {
-    flex: 1;
-    padding: 8px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
-
-  /* ─── SCREENS ────────────────────────────────── */
-  .screen { display: none; flex-direction: column; gap: 16px; animation: fadeUp 0.3s ease; }
-  .screen.active { display: flex; }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  /* ─── HOME SCREEN ────────────────────────────── */
-  .home-headline {
-    padding: 8px 0 20px;
-  }
-
-  .home-headline h1 {
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: -0.8px;
-    line-height: 1.2;
-    margin-bottom: 6px;
-  }
-
-  .home-headline p {
-    font-size: 13px;
-    color: var(--text2);
-    font-weight: 300;
-  }
-
-  .tools-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-
-  .tool-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px 16px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .tool-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, var(--accent-glow) 0%, transparent 60%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .tool-card:active::before { opacity: 1; }
-  .tool-card:active { transform: scale(0.97); border-color: var(--accent); }
-
-  .tool-card.wide {
-    grid-column: 1 / -1;
-    flex-direction: row;
-    align-items: center;
-    padding: 18px 20px;
-    gap: 16px;
-  }
-
-  .tool-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    flex-shrink: 0;
-  }
-
-  .tool-card.wide .tool-icon { width: 46px; height: 46px; }
-
-  .tool-icon.purple { background: rgba(108,99,255,0.2); }
-  .tool-icon.blue   { background: rgba(59,130,246,0.2); }
-  .tool-icon.green  { background: rgba(74,222,128,0.2); }
-  .tool-icon.orange { background: rgba(251,146,60,0.2); }
-  .tool-icon.pink   { background: rgba(244,114,182,0.2); }
-  .tool-icon.teal   { background: rgba(45,212,191,0.2); }
-
-  .tool-info { flex: 1; min-width: 0; }
-
-  .tool-name {
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 3px;
-    letter-spacing: -0.2px;
-  }
-
-  .tool-desc {
-    font-size: 11.5px;
-    color: var(--text2);
-    line-height: 1.4;
-    font-weight: 300;
-  }
-
-  .tool-arrow {
-    color: var(--text3);
-    font-size: 16px;
-    flex-shrink: 0;
-  }
-
-  /* ─── SECTION LABEL ──────────────────────────── */
-  .section-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text3);
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    padding: 0 2px;
-    margin-bottom: 4px;
-  }
-
-  /* ─── TOOL SCREEN ────────────────────────────── */
-  .tool-header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 4px 0 8px;
-  }
-
-  .back-btn {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 18px;
-    transition: all 0.15s;
-    flex-shrink: 0;
     color: var(--text);
   }
 
-  .back-btn:active { transform: scale(0.92); background: var(--surface2); }
+  .nav-logo-text em { color: var(--accent2); font-style: normal; }
 
-  .tool-title-block { flex: 1; }
-  .tool-title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
-  .tool-subtitle { font-size: 12px; color: var(--text2); font-weight: 300; margin-top: 2px; }
+  /* Back nav title bar (used in tool screens) */
+  #top-nav.tool-nav .nav-logo { display: none; }
+  #top-nav .nav-back {
+    display: none;
+    align-items: center;
+    gap: 4px;
+    color: var(--accent2);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 6px 2px;
+    border: none;
+    background: none;
+  }
+  #top-nav.tool-nav .nav-back { display: flex; }
+  #top-nav .nav-back:active { opacity: 0.6; }
+
+  .nav-title {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  /* ─── SCROLL AREA ────────────────────────────── */
+  #scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    padding-bottom: calc(var(--tab-h) + 8px);
+  }
+
+  #scroll-area::-webkit-scrollbar { display: none; }
+
+  /* ─── SCREENS ────────────────────────────────── */
+  .screen {
+    display: none;
+    flex-direction: column;
+    gap: 0;
+    min-height: 100%;
+    animation: screenIn 0.28s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .screen.active { display: flex; }
+
+  .screen.slide-in  { animation: slideIn  0.28s cubic-bezier(0.4,0,0.2,1); }
+  .screen.slide-out { animation: slideOut 0.22s cubic-bezier(0.4,0,1,1) forwards; }
+
+  @keyframes screenIn  { from { opacity:0; transform:translateX(28px); } to { opacity:1; transform:translateX(0); } }
+  @keyframes slideIn   { from { opacity:0; transform:translateX(100%); } to { opacity:1; transform:translateX(0); } }
+  @keyframes slideOut  { from { opacity:1; transform:translateX(0); }   to { opacity:0; transform:translateX(40px); } }
+  @keyframes fadeIn    { from { opacity:0; } to { opacity:1; } }
+
+  /* ─── SCREEN PADDING ─────────────────────────── */
+  .screen-pad { padding: 16px 16px 0; display: flex; flex-direction: column; gap: 14px; }
+
+  /* ─── HOME SCREEN ────────────────────────────── */
+  .home-hero {
+    padding: 22px 16px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .home-hero h1 {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.7px;
+    line-height: 1.15;
+    color: var(--text);
+  }
+
+  .home-hero p {
+    font-size: 13px;
+    color: var(--text2);
+    font-weight: 400;
+    margin-top: 4px;
+  }
+
+  /* ─── LIST SECTION ───────────────────────────── */
+  .list-section {
+    padding: 0 16px;
+    margin-bottom: 6px;
+  }
+
+  .list-section-header {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text3);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 14px 4px 8px;
+  }
+
+  /* iOS-style grouped list */
+  .list-group {
+    background: var(--surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .list-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 16px;
+    cursor: pointer;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.12s;
+    min-height: 58px;
+  }
+
+  .list-item:last-child { border-bottom: none; }
+  .list-item:active { background: var(--surface2); }
+
+  .list-item-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+
+  .list-item-icon.purple  { background: rgba(124,110,247,0.18); }
+  .list-item-icon.blue    { background: rgba(59,130,246,0.18); }
+  .list-item-icon.green   { background: rgba(52,211,153,0.18); }
+  .list-item-icon.orange  { background: rgba(249,115,22,0.18); }
+  .list-item-icon.pink    { background: rgba(244,114,182,0.18); }
+  .list-item-icon.teal    { background: rgba(45,212,191,0.18); }
+  .list-item-icon.red     { background: rgba(255,82,82,0.18); }
+  .list-item-icon.indigo  { background: rgba(99,102,241,0.18); }
+
+  .list-item-body { flex: 1; min-width: 0; }
+  .list-item-title { font-size: 15px; font-weight: 500; letter-spacing: -0.2px; color: var(--text); }
+  .list-item-desc  { font-size: 12px; color: var(--text2); margin-top: 1px; }
+
+  .list-item-chevron {
+    color: var(--text3);
+    font-size: 17px;
+    font-weight: 300;
+    flex-shrink: 0;
+  }
+
+  /* ─── TOOL SCREEN CONTENT ────────────────────── */
+  .tool-section {
+    padding: 12px 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .section-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text3);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 0 4px;
+  }
 
   /* ─── DROP ZONE ──────────────────────────────── */
   .drop-zone {
-    border: 2px dashed var(--border2);
+    border: 1.5px dashed var(--border2);
     border-radius: var(--radius);
-    padding: 36px 24px;
+    padding: 32px 20px;
     text-align: center;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -283,134 +347,112 @@
     overflow: hidden;
   }
 
-  .drop-zone.dragging {
-    border-color: var(--accent);
-    background: rgba(108,99,255,0.08);
-  }
+  .drop-zone.dragging { border-color: var(--accent); background: var(--accent-dim); }
+  .drop-zone.has-file { border-style: solid; border-color: var(--accent); background: var(--accent-dim); }
+  .drop-zone:active   { background: var(--surface2); }
 
-  .drop-zone.has-file {
-    border-style: solid;
-    border-color: var(--accent);
-    background: rgba(108,99,255,0.05);
-  }
+  .drop-icon   { font-size: 32px; margin-bottom: 10px; display: block; }
+  .drop-title  { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .drop-hint   { font-size: 12px; color: var(--text2); }
 
-  .drop-icon {
-    font-size: 36px;
-    margin-bottom: 12px;
-    display: block;
-  }
-
-  .drop-title {
-    font-size: 15px;
-    font-weight: 600;
-    margin-bottom: 6px;
-  }
-
-  .drop-hint {
-    font-size: 12px;
-    color: var(--text2);
-    font-weight: 300;
-  }
-
+  /* ─── FILE CHIP ──────────────────────────────── */
   .file-chip {
     display: flex;
     align-items: center;
     gap: 10px;
     background: var(--surface2);
     border: 1px solid var(--border2);
-    border-radius: 12px;
-    padding: 12px 16px;
-    margin-top: 12px;
+    border-radius: var(--radius-sm);
+    padding: 11px 14px;
   }
 
-  .file-chip-icon { font-size: 24px; }
-
+  .file-chip-icon { font-size: 22px; }
   .file-chip-info { flex: 1; min-width: 0; }
   .file-chip-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .file-chip-size { font-size: 11px; color: var(--text2); font-family: var(--mono); margin-top: 2px; }
+  .file-chip-size { font-size: 11px; color: var(--text2); font-family: var(--mono); margin-top: 1px; }
 
   .file-chip-remove {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    background: rgba(255,92,92,0.1);
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--surface3);
     border: none;
-    color: var(--danger);
-    font-size: 16px;
+    color: var(--text2);
+    font-size: 14px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
-    transition: background 0.15s;
+    transition: all 0.15s;
   }
-
-  .file-chip-remove:active { background: rgba(255,92,92,0.2); }
+  .file-chip-remove:active { background: var(--danger-dim); color: var(--danger); }
 
   input[type="file"] { display: none; }
 
-  /* ─── CONTROLS ───────────────────────────────── */
+  /* ─── CONTROL GROUP (iOS settings style) ────── */
   .control-group {
     background: var(--surface);
-    border: 1px solid var(--border);
     border-radius: var(--radius);
     overflow: hidden;
+    border: 1px solid var(--border);
   }
 
   .control-row {
     display: flex;
     align-items: center;
-    padding: 14px 18px;
+    padding: 13px 16px;
     gap: 12px;
     border-bottom: 1px solid var(--border);
+    min-height: 52px;
   }
 
   .control-row:last-child { border-bottom: none; }
 
-  .control-label {
-    flex: 1;
-    font-size: 14px;
-    font-weight: 500;
-  }
+  .control-label { flex: 1; font-size: 15px; font-weight: 400; color: var(--text); }
+  .control-sub   { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .control-value { font-family: var(--mono); font-size: 13px; color: var(--accent2); }
 
-  .control-hint {
-    font-size: 11px;
-    color: var(--text2);
-    margin-top: 2px;
+  /* ─── TOGGLE SWITCH ──────────────────────────── */
+  .toggle {
+    width: 50px; height: 28px;
+    border-radius: 14px;
+    background: var(--surface3);
+    border: none;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+    appearance: none;
+    -webkit-appearance: none;
   }
-
-  .control-value {
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--accent2);
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.2s cubic-bezier(0.34,1.4,0.64,1);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
   }
+  .toggle:checked { background: var(--accent); }
+  .toggle:checked::after { transform: translateX(22px); }
 
-  /* ─── INPUT ──────────────────────────────────── */
+  /* ─── INPUT FIELD ────────────────────────────── */
   .input-field {
     background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: var(--radius-sm);
-    padding: 10px 14px;
+    border: 1.5px solid var(--border2);
+    border-radius: var(--radius-xs);
+    padding: 10px 13px;
     font-family: var(--mono);
     font-size: 14px;
     color: var(--text);
     width: 100%;
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.15s;
   }
-
   .input-field:focus { border-color: var(--accent); }
   .input-field::placeholder { color: var(--text3); }
 
-  .input-row {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-
-  .input-row .input-field { flex: 1; }
-
-  /* ─── RANGE ──────────────────────────────────── */
+  /* ─── RANGE SLIDER ───────────────────────────── */
   input[type="range"] {
     -webkit-appearance: none;
     width: 100%;
@@ -419,27 +461,25 @@
     border-radius: 2px;
     outline: none;
   }
-
   input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 20px;
-    height: 20px;
+    width: 22px; height: 22px;
     border-radius: 50%;
     background: var(--accent);
     cursor: pointer;
-    box-shadow: 0 0 8px var(--accent-glow);
+    box-shadow: 0 0 0 3px var(--accent-dim), 0 2px 8px var(--accent-glow);
   }
 
   /* ─── BUTTONS ────────────────────────────────── */
   .btn {
-    padding: 15px 24px;
+    padding: 15px 20px;
     border-radius: var(--radius-sm);
     border: none;
     font-family: var(--font);
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.13s;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -451,100 +491,30 @@
   .btn-primary {
     background: var(--accent);
     color: #fff;
-    box-shadow: 0 4px 20px var(--accent-glow);
+    box-shadow: 0 4px 16px var(--accent-glow);
   }
-
   .btn-primary:active { transform: scale(0.97); box-shadow: none; }
-  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-primary:disabled { opacity: 0.38; cursor: not-allowed; transform: none; }
 
   .btn-secondary {
     background: var(--surface2);
     color: var(--text);
     border: 1px solid var(--border2);
   }
-
   .btn-secondary:active { transform: scale(0.97); }
 
-  .btn-danger {
-    background: rgba(255,92,92,0.12);
-    color: var(--danger);
-    border: 1px solid rgba(255,92,92,0.2);
-  }
-
-  /* ─── TOAST ──────────────────────────────────── */
-  #toast-container {
-    position: fixed;
-    bottom: calc(20px + var(--safe-bottom));
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 999;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    align-items: center;
-    pointer-events: none;
-    width: 90%;
-    max-width: 390px;
-  }
-
-  .toast {
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: 12px;
-    padding: 12px 20px;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-    animation: toastIn 0.3s ease;
-    width: 100%;
-    backdrop-filter: blur(10px);
-  }
-
-  .toast.success { border-color: rgba(74,222,128,0.3); }
-  .toast.error   { border-color: rgba(255,92,92,0.3); }
-  .toast.info    { border-color: rgba(108,99,255,0.3); }
-
-  @keyframes toastIn {
-    from { opacity: 0; transform: translateY(10px) scale(0.95); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-  }
-
-  /* ─── PROGRESS ───────────────────────────────── */
-  .progress-bar {
-    height: 4px;
-    background: var(--surface3);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    border-radius: 2px;
-    transition: width 0.3s ease;
-    width: 0%;
-  }
-
-  /* ─── PAGE REORDER ───────────────────────────── */
-  .pages-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
+  /* ─── PAGE LIST ──────────────────────────────── */
+  .pages-list { display: flex; flex-direction: column; gap: 8px; }
 
   .page-item {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
-    padding: 12px 16px;
+    padding: 10px 14px;
     display: flex;
     align-items: center;
     gap: 12px;
-    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+    transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1),
                 box-shadow 0.2s ease,
                 border-color 0.2s ease,
                 background 0.2s ease,
@@ -553,275 +523,282 @@
     will-change: transform;
   }
 
-  /* Only reorder list items get touch-action none for drag */
-  #reorder-pages .page-item {
-    touch-action: none;
-    cursor: grab;
-  }
+  #reorder-pages .page-item { touch-action: none; cursor: default; }
 
-  /* dragging-item and drag-over replaced by .is-lifted and slot indicators above */
-
-  .page-handle { color: var(--text3); font-size: 18px; cursor: grab; padding: 4px; }
+  .page-handle { color: var(--text3); font-size: 18px; cursor: grab; padding: 4px; flex-shrink: 0; }
 
   .page-thumb {
-    width: 44px;
-    height: 58px;
+    width: 40px; height: 54px;
     background: var(--surface3);
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text2);
+    border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 10px; color: var(--text2);
     flex-shrink: 0;
     border: 1px solid var(--border);
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    position: relative; overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   }
 
-  /* Reorder uses bigger thumbs */
-  #reorder-pages .page-thumb {
-    width: 54px;
-    height: 72px;
-    border-radius: 7px;
-  }
+  #reorder-pages .page-thumb { width: 50px; height: 66px; border-radius: 6px; }
 
   .page-thumb canvas {
-    position: absolute;
-    inset: 0;
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover;
-    border-radius: inherit;
+    position: absolute; inset: 0;
+    width: 100% !important; height: 100% !important;
+    object-fit: cover; border-radius: inherit;
   }
 
   .page-thumb .thumb-spinner {
-    width: 16px;
-    height: 16px;
-    border: 2px solid var(--surface2);
+    width: 14px; height: 14px;
+    border: 2px solid var(--surface3);
     border-top-color: var(--accent);
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
   }
 
-  /* ─── REORDER ANIMATION ──────────────────────── */
-  .page-item {
-    will-change: transform;
-    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
-                box-shadow 0.2s ease,
-                border-color 0.2s ease,
-                background 0.2s ease,
-                opacity 0.2s ease;
-  }
-
   .page-item.is-lifted {
-    opacity: 0.85;
+    opacity: 0.88;
     transform: scale(1.03) translateY(-2px) !important;
     border-color: var(--accent) !important;
-    background: rgba(108,99,255,0.12) !important;
-    box-shadow: 0 10px 32px rgba(108,99,255,0.25), 0 4px 12px rgba(0,0,0,0.4) !important;
-    cursor: grabbing;
+    background: var(--accent-dim) !important;
+    box-shadow: 0 10px 30px var(--accent-glow), 0 4px 12px rgba(0,0,0,0.3) !important;
     z-index: 10;
   }
 
-  .page-item.slot-above {
-    border-top: 2px solid var(--accent);
-  }
+  .page-item.slot-above { border-top: 2px solid var(--accent); }
+  .page-item.slot-below { border-bottom: 2px solid var(--accent); }
+  .page-item.drag-ready { border-color: var(--accent) !important; box-shadow: 0 0 0 2px var(--accent-glow); }
+  #reorder-pages.drag-mode .page-handle { color: var(--accent2); }
 
-  .page-item.slot-below {
-    border-bottom: 2px solid var(--accent);
-  }
-
-  /* FLIP: item leaving its old position */
-  @keyframes itemSwapIn {
-    from { opacity: 0.6; }
-    to   { opacity: 1; }
-  }
-
-  .page-info { flex: 1; }
+  .page-info { flex: 1; min-width: 0; }
   .page-name { font-size: 13px; font-weight: 500; }
-  .page-size { font-size: 11px; color: var(--text2); font-family: var(--mono); margin-top: 2px; }
+  .page-size { font-size: 11px; color: var(--text2); font-family: var(--mono); margin-top: 1px; }
 
   .page-delete {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
+    width: 26px; height: 26px;
+    border-radius: 50%;
     background: transparent;
     border: none;
     color: var(--text3);
-    font-size: 16px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s;
-  }
-
-  .page-delete:active { color: var(--danger); background: rgba(255,92,92,0.1); }
-
-  /* ─── LOADING OVERLAY ────────────────────────── */
-  #loading-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(15,15,17,0.85);
-    backdrop-filter: blur(8px);
-    z-index: 500;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  #loading-overlay.show { display: flex; }
-
-  .spinner {
-    width: 44px;
-    height: 44px;
-    border: 3px solid var(--surface3);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .loading-text {
     font-size: 14px;
-    color: var(--text2);
-    font-weight: 500;
-  }
-
-  /* ─── CHIPS / TAGS ───────────────────────────── */
-  .chip-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .chip {
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
     cursor: pointer;
-    border: 1px solid var(--border2);
-    background: var(--surface2);
-    color: var(--text2);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
     transition: all 0.15s;
-    font-family: var(--mono);
+  }
+  .page-delete:active { color: var(--danger); background: var(--danger-dim); }
+
+  /* ─── TOAST ──────────────────────────────────── */
+  #toast-container {
+    position: fixed;
+    bottom: calc(var(--tab-h) + 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    pointer-events: none;
+    width: calc(100% - 32px);
+    max-width: 390px;
   }
 
-  .chip.active {
-    background: rgba(108,99,255,0.15);
-    border-color: var(--accent);
-    color: var(--accent2);
+  .toast {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 11px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    box-shadow: var(--shadow);
+    animation: toastIn 0.25s cubic-bezier(0.34,1.4,0.64,1);
+    width: 100%;
+    backdrop-filter: blur(20px);
   }
+  .toast.success { border-color: rgba(52,211,153,0.3); }
+  .toast.error   { border-color: rgba(255,82,82,0.3); }
+  .toast.info    { border-color: var(--border2); }
 
-  .chip:active { transform: scale(0.95); }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateY(8px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
 
   /* ─── RESULT AREA ────────────────────────────── */
   .result-area {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    overflow: hidden;
+  }
+
+  .result-header {
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text3);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
   }
 
   .result-item {
     display: flex;
     align-items: center;
     gap: 12px;
-    background: var(--surface2);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
-    border: 1px solid var(--border);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
   }
+  .result-item:last-child { border-bottom: none; }
 
-  .result-icon { font-size: 22px; }
+  .result-icon { font-size: 22px; flex-shrink: 0; }
   .result-info { flex: 1; min-width: 0; }
   .result-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .result-meta { font-size: 11px; color: var(--text2); font-family: var(--mono); margin-top: 2px; }
+  .result-meta { font-size: 11px; color: var(--text2); font-family: var(--mono); margin-top: 1px; }
 
   .result-dl {
-    width: 34px;
-    height: 34px;
-    border-radius: 8px;
-    background: rgba(108,99,255,0.15);
-    border: 1px solid rgba(108,99,255,0.3);
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--accent-dim);
+    border: none;
     color: var(--accent2);
     font-size: 16px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
     text-decoration: none;
     transition: background 0.15s;
   }
+  .result-dl:active { background: var(--accent-glow); }
 
-  .result-dl:active { background: rgba(108,99,255,0.25); }
+  /* ─── TAB BAR ────────────────────────────────── */
+  #tab-bar {
+    height: var(--tab-h);
+    padding-bottom: var(--safe-bottom);
+    display: flex;
+    align-items: stretch;
+    background: var(--nav-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 100;
+  }
 
-  /* ─── BOTTOM PADDING ─────────────────────────── */
-  .bottom-spacer { height: calc(20px + var(--safe-bottom)); flex-shrink: 0; }
-
-  /* ─── SCROLLBAR ──────────────────────────────── */
-  ::-webkit-scrollbar { width: 0; }
-  #split-page-strip::-webkit-scrollbar { display: none; }
-
-  /* ─── SPLIT RANGES ───────────────────────────── */
-  .range-list {
+  .tab-item {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    padding: 6px 4px 0;
+    border: none;
+    background: none;
+    color: var(--text3);
+    font-family: var(--font);
+    transition: color 0.15s;
+    position: relative;
   }
+
+  .tab-item.active { color: var(--accent); }
+  .tab-item:active { opacity: 0.7; }
+
+  .tab-icon {
+    font-size: 22px;
+    line-height: 1;
+    transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  .tab-item.active .tab-icon { transform: scale(1.1); }
+
+  .tab-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+  }
+
+  .tab-dot {
+    position: absolute;
+    top: 4px;
+    right: calc(50% - 14px);
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  /* ─── LOADING ────────────────────────────────── */
+  #loading-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(10px);
+    z-index: 500;
+    display: none; align-items: center; justify-content: center; flex-direction: column; gap: 14px;
+  }
+  #loading-overlay.show { display: flex; }
+
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid rgba(255,255,255,0.1);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+  }
+
+  .loading-text { font-size: 14px; color: rgba(255,255,255,0.7); font-weight: 500; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ─── CHIPS ──────────────────────────────────── */
+  .chip-row { display: flex; flex-wrap: wrap; gap: 7px; }
+
+  .chip {
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid var(--border2);
+    background: var(--surface2);
+    color: var(--text2);
+    transition: all 0.13s;
+    font-family: var(--mono);
+  }
+  .chip.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent2); }
+  .chip:active { transform: scale(0.95); }
+
+  /* ─── RANGE LIST ─────────────────────────────── */
+  .range-list { display: flex; flex-direction: column; gap: 7px; }
 
   .range-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    display: flex; align-items: center; gap: 8px;
     background: var(--surface2);
     border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 10px 14px;
-  }
-
-  .range-num {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text3);
-    width: 20px;
-    flex-shrink: 0;
-  }
-
-  .range-item .input-field {
-    flex: 1;
+    border-radius: var(--radius-xs);
     padding: 8px 12px;
   }
 
+  .range-num { font-family: var(--mono); font-size: 11px; color: var(--text3); width: 18px; flex-shrink: 0; }
+  .range-item .input-field { flex: 1; padding: 7px 11px; }
   .range-del {
-    width: 28px;
-    height: 28px;
-    background: none;
-    border: none;
+    width: 26px; height: 26px;
+    background: none; border: none;
     color: var(--text3);
-    font-size: 18px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    flex-shrink: 0;
+    font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 6px; flex-shrink: 0;
   }
+  .range-del:active { color: var(--danger); background: var(--danger-dim); }
 
-  .range-del:active { color: var(--danger); background: rgba(255,92,92,0.1); }
-
-  /* ─── COMPRESS OPTIONS ───────────────────────── */
+  /* ─── COMPRESS VISUAL ────────────────────────── */
   .compress-visual {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -831,390 +808,623 @@
   }
 
   .compress-dial {
-    font-size: 48px;
-    font-weight: 700;
+    font-size: 44px;
+    font-weight: 800;
     font-family: var(--mono);
     color: var(--accent2);
-    margin: 8px 0;
+    margin: 6px 0;
     line-height: 1;
+    letter-spacing: -2px;
   }
 
-  .compress-label {
-    font-size: 12px;
-    color: var(--text2);
-    margin-bottom: 16px;
-  }
+  .compress-label { font-size: 12px; color: var(--text2); margin-bottom: 14px; }
 
   /* ─── WATERMARK ──────────────────────────────── */
   .wm-preview {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    height: 140px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    font-weight: 700;
-    opacity: 0.15;
-    letter-spacing: 2px;
-    position: relative;
-    overflow: hidden;
-    color: var(--text);
+    height: 120px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
   }
 
   .wm-preview-text {
-    opacity: 1;
-    font-size: 13px;
-    color: var(--text3);
-    font-weight: 300;
+    font-size: 22px; font-weight: 800;
+    letter-spacing: 3px;
+    transform: rotate(-25deg);
   }
 
-  /* ─── SMALL UTILITY ──────────────────────────── */
-  .spacer-sm { height: 8px; }
-  .spacer-md { height: 16px; }
-  .text-center { text-align: center; }
-  .text-sm { font-size: 12px; color: var(--text2); }
-  .flex-row { display: flex; gap: 10px; }
+  /* ─── SETTINGS SCREEN ────────────────────────── */
+  .settings-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 8px;
+    gap: 8px;
+  }
+
+  .settings-avatar {
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px;
+    box-shadow: 0 4px 20px var(--accent-glow);
+  }
+
+  .settings-app-name { font-size: 18px; font-weight: 700; letter-spacing: -0.4px; }
+  .settings-app-ver  { font-size: 12px; color: var(--text3); font-family: var(--mono); }
+
+  /* Theme picker */
+  .theme-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .theme-card {
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.15s;
+    display: flex; flex-direction: column; gap: 8px;
+    position: relative;
+  }
+
+  .theme-card.selected { border-color: var(--accent); }
+  .theme-card:active   { transform: scale(0.97); }
+
+  .theme-card-preview {
+    height: 56px;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    gap: 4px;
+    padding: 8px;
+  }
+
+  .theme-bar { border-radius: 3px; height: 7px; }
+  .theme-bar.wide  { width: 70%; }
+  .theme-bar.mid   { width: 50%; }
+  .theme-bar.short { width: 35%; }
+
+  .theme-card-label { font-size: 13px; font-weight: 500; text-align: center; }
+  .theme-card-check {
+    position: absolute; top: 8px; right: 8px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--accent);
+    display: none; align-items: center; justify-content: center;
+    font-size: 11px; color: #fff;
+  }
+  .theme-card.selected .theme-card-check { display: flex; }
+
+  /* Accent color picker */
+  .accent-row { display: flex; gap: 10px; justify-content: center; padding: 4px 0; }
+  .accent-dot {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .accent-dot.selected { border-color: var(--text); transform: scale(1.1); }
+  .accent-dot:active   { transform: scale(0.9); }
+
+  /* ─── FULLSCREEN VIEWER ──────────────────────── */
+  #page-viewer {
+    position: fixed; inset: 0;
+    z-index: 900;
+    background: #000;
+    display: none; flex-direction: column;
+    align-items: stretch; overflow: hidden;
+    touch-action: none;
+  }
+  #page-viewer.open { display: flex; }
+
+  .viewer-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: calc(14px + var(--safe-top)) 16px 10px;
+    position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
+  }
+
+  .viewer-close {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff; font-size: 16px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .viewer-close:active { background: rgba(255,255,255,0.22); }
+
+  .viewer-page-label {
+    font-family: var(--mono); font-size: 13px;
+    color: rgba(255,255,255,0.8);
+    background: rgba(0,0,0,0.4);
+    padding: 5px 13px; border-radius: 20px;
+    backdrop-filter: blur(8px);
+  }
+
+  .viewer-track { flex: 1; display: flex; align-items: stretch; position: relative; overflow: hidden; }
+
+  .viewer-slides {
+    display: flex; align-items: center; height: 100%;
+    transition: transform 0.33s cubic-bezier(0.4,0,0.2,1);
+    will-change: transform;
+  }
+
+  .viewer-slide {
+    flex-shrink: 0; width: 100vw; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    padding: 64px 12px 72px;
+    position: relative;
+  }
+
+  .viewer-slide canvas {
+    max-width: 100%; max-height: 100%;
+    object-fit: contain; border-radius: 4px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    display: block; opacity: 0;
+    transition: opacity 0.22s ease;
+  }
+  .viewer-slide canvas.loaded { opacity: 1; }
+
+  .viewer-slide-spinner {
+    position: absolute;
+    width: 28px; height: 28px;
+    border: 2px solid rgba(255,255,255,0.1);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  .viewer-footer {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 12px 16px calc(12px + var(--safe-bottom));
+    background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 100%);
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    z-index: 10;
+  }
+
+  .viewer-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    transition: all 0.2s; cursor: pointer;
+  }
+  .viewer-dot.active { width: 18px; border-radius: 3px; background: #fff; }
+
+  .viewer-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.12);
+    color: #fff; font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 10; transition: background 0.15s;
+  }
+  .viewer-arrow:active { background: rgba(255,255,255,0.22); }
+  .viewer-arrow.prev { left: 10px; }
+  .viewer-arrow.next { right: 10px; }
+  .viewer-arrow.hidden { opacity: 0; pointer-events: none; }
+
+  /* ─── SPLIT STRIP ────────────────────────────── */
+  #split-page-strip::-webkit-scrollbar { display: none; }
+
+  /* ─── MISC ───────────────────────────────────── */
+  .spacer-sm  { height: 8px; }
+  .spacer-md  { height: 14px; }
+  .flex-row   { display: flex; gap: 10px; }
   .flex-row .btn { flex: 1; }
+  .progress-bar { height: 3px; background: var(--surface3); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:2px; transition:width 0.3s ease; width:0%; }
 </style>
 </head>
 <body>
 
 <div id="app">
-  <header>
-    <div class="logo">
-      <div class="logo-icon">📄</div>
-      <div class="logo-text">PDF<span>Kit</span></div>
+  <!-- Status bar fill -->
+  <div id="status-bar-fill"></div>
+
+  <!-- Top nav -->
+  <nav id="top-nav">
+    <div class="nav-logo">
+      <div class="nav-logo-mark">📄</div>
+      <div class="nav-logo-text">PDF<em>Kit</em></div>
     </div>
-    <div class="header-badge">v1.0</div>
-  </header>
+    <button class="nav-back" id="nav-back-btn" onclick="goBack()">
+      <span style="font-size:20px">‹</span> Back
+    </button>
+    <div class="nav-title" id="nav-title"></div>
+    <div style="width:60px"></div><!-- right spacer -->
+  </nav>
 
-  <main>
+  <!-- Scrollable content -->
+  <div id="scroll-area">
 
-    <!-- ── HOME ───────────────────────────── -->
+    <!-- ── HOME ─────────────────────────────── -->
     <div id="screen-home" class="screen active">
-      <div class="home-headline">
+      <div class="home-hero">
         <h1>PDF tools,<br>no nonsense.</h1>
-        <p>Everything runs in your browser. No uploads, no accounts.</p>
+        <p>Private · fast · runs in your browser</p>
       </div>
 
-      <div class="section-label">Tools</div>
-      <div class="tools-grid">
-        <div class="tool-card wide" onclick="openTool('merge')">
-          <div class="tool-icon purple">🔗</div>
-          <div class="tool-info">
-            <div class="tool-name">Merge PDFs</div>
-            <div class="tool-desc">Combine multiple PDFs into one file</div>
+      <div class="list-section">
+        <div class="list-section-header">Tools</div>
+        <div class="list-group">
+          <div class="list-item" onclick="openTool('merge')">
+            <div class="list-item-icon purple">🔗</div>
+            <div class="list-item-body">
+              <div class="list-item-title">Merge PDFs</div>
+              <div class="list-item-desc">Combine multiple PDFs into one</div>
+            </div>
+            <div class="list-item-chevron">›</div>
           </div>
-          <div class="tool-arrow">›</div>
-        </div>
-
-        <div class="tool-card" onclick="openTool('split')">
-          <div class="tool-icon blue">✂️</div>
-          <div class="tool-info">
-            <div class="tool-name">Split PDF</div>
-            <div class="tool-desc">Extract pages or ranges</div>
+          <div class="list-item" onclick="openTool('split')">
+            <div class="list-item-icon blue">✂️</div>
+            <div class="list-item-body">
+              <div class="list-item-title">Split PDF</div>
+              <div class="list-item-desc">Extract pages or custom ranges</div>
+            </div>
+            <div class="list-item-chevron">›</div>
           </div>
-        </div>
-
-        <div class="tool-card" onclick="openTool('reorder')">
-          <div class="tool-icon green">↕️</div>
-          <div class="tool-info">
-            <div class="tool-name">Reorder</div>
-            <div class="tool-desc">Drag pages into new order</div>
+          <div class="list-item" onclick="openTool('reorder')">
+            <div class="list-item-icon green">↕️</div>
+            <div class="list-item-body">
+              <div class="list-item-title">Reorder Pages</div>
+              <div class="list-item-desc">Tap to preview · hold to drag</div>
+            </div>
+            <div class="list-item-chevron">›</div>
           </div>
-        </div>
-
-        <div class="tool-card" onclick="openTool('rotate')">
-          <div class="tool-icon orange">🔄</div>
-          <div class="tool-info">
-            <div class="tool-name">Rotate</div>
-            <div class="tool-desc">Rotate pages or all</div>
+          <div class="list-item" onclick="openTool('rotate')">
+            <div class="list-item-icon orange">🔄</div>
+            <div class="list-item-body">
+              <div class="list-item-title">Rotate Pages</div>
+              <div class="list-item-desc">Rotate all, odd, even or custom</div>
+            </div>
+            <div class="list-item-chevron">›</div>
           </div>
-        </div>
-
-        <div class="tool-card" onclick="openTool('compress')">
-          <div class="tool-icon pink">🗜️</div>
-          <div class="tool-info">
-            <div class="tool-name">Compress</div>
-            <div class="tool-desc">Reduce file size</div>
+          <div class="list-item" onclick="openTool('compress')">
+            <div class="list-item-icon pink">🗜️</div>
+            <div class="list-item-body">
+              <div class="list-item-title">Compress PDF</div>
+              <div class="list-item-desc">Strip metadata, reduce file size</div>
+            </div>
+            <div class="list-item-chevron">›</div>
           </div>
-        </div>
-
-        <div class="tool-card wide" onclick="openTool('delete-pages')">
-          <div class="tool-icon teal">🗑️</div>
-          <div class="tool-info">
-            <div class="tool-name">Delete Pages</div>
-            <div class="tool-desc">Remove unwanted pages from a PDF</div>
+          <div class="list-item" onclick="openTool('delete-pages')">
+            <div class="list-item-icon red">🗑️</div>
+            <div class="list-item-body">
+              <div class="list-item-title">Delete Pages</div>
+              <div class="list-item-desc">Remove unwanted pages</div>
+            </div>
+            <div class="list-item-chevron">›</div>
           </div>
-          <div class="tool-arrow">›</div>
-        </div>
-
-        <div class="tool-card wide" onclick="openTool('watermark')">
-          <div class="tool-icon purple">💧</div>
-          <div class="tool-info">
-            <div class="tool-name">Watermark</div>
-            <div class="tool-desc">Add text watermark to all pages</div>
+          <div class="list-item" onclick="openTool('watermark')">
+            <div class="list-item-icon indigo">💧</div>
+            <div class="list-item-body">
+              <div class="list-item-title">Watermark</div>
+              <div class="list-item-desc">Add diagonal text to all pages</div>
+            </div>
+            <div class="list-item-chevron">›</div>
           </div>
-          <div class="tool-arrow">›</div>
         </div>
       </div>
     </div>
 
-    <!-- ── MERGE ───────────────────────────── -->
-    <div id="screen-merge" class="screen">
-      <div class="tool-header">
-        <div class="back-btn" onclick="goHome()">←</div>
-        <div class="tool-title-block">
-          <div class="tool-title">Merge PDFs</div>
-          <div class="tool-subtitle">Combine multiple files into one</div>
-        </div>
+    <!-- ── SETTINGS ──────────────────────────── -->
+    <div id="screen-settings" class="screen">
+      <div class="settings-profile">
+        <div class="settings-avatar">📄</div>
+        <div class="settings-app-name">PDFKit</div>
+        <div class="settings-app-ver">v1.0 · All processing is local</div>
       </div>
 
-      <div class="drop-zone" id="merge-drop" onclick="document.getElementById('merge-input').click()">
-        <input type="file" id="merge-input" multiple accept=".pdf" onchange="mergeAddFiles(this.files)">
-        <span class="drop-icon">📂</span>
-        <div class="drop-title">Tap to add PDFs</div>
-        <div class="drop-hint">Select multiple files</div>
-      </div>
-
-      <div id="merge-list" class="pages-list"></div>
-
-      <div class="flex-row" id="merge-actions" style="display:none">
-        <button class="btn btn-secondary" onclick="mergeClear()">Clear</button>
-        <button class="btn btn-primary" onclick="mergeDo()">🔗 Merge</button>
-      </div>
-
-      <div id="merge-result"></div>
-    </div>
-
-    <!-- ── SPLIT ───────────────────────────── -->
-    <div id="screen-split" class="screen">
-      <div class="tool-header">
-        <div class="back-btn" onclick="goHome()">←</div>
-        <div class="tool-title-block">
-          <div class="tool-title">Split PDF</div>
-          <div class="tool-subtitle">Extract pages or page ranges</div>
-        </div>
-      </div>
-
-      <div class="drop-zone" id="split-drop" onclick="document.getElementById('split-input').click()">
-        <input type="file" id="split-input" accept=".pdf" onchange="splitLoad(this.files[0])">
-        <span class="drop-icon">✂️</span>
-        <div class="drop-title">Tap to choose PDF</div>
-        <div class="drop-hint">One file at a time</div>
-      </div>
-
-      <div id="split-file-info"></div>
-
-      <div id="split-options" style="display:none">
-        <div class="section-label" style="margin-bottom:8px">Split mode</div>
-        <div class="chip-row">
-          <div class="chip active" id="chip-each" onclick="splitMode('each')">Every page</div>
-          <div class="chip" id="chip-ranges" onclick="splitMode('ranges')">Custom ranges</div>
-        </div>
-
-        <div id="ranges-editor" style="display:none;margin-top:14px">
-          <div class="range-list" id="range-list"></div>
-          <div class="spacer-sm"></div>
-          <button class="btn btn-secondary" style="padding:10px" onclick="addRange()">+ Add range</button>
-        </div>
-
-        <div class="spacer-md"></div>
-        <button class="btn btn-primary" onclick="splitDo()">✂️ Split PDF</button>
-      </div>
-
-      <div id="split-result"></div>
-    </div>
-
-    <!-- ── REORDER ─────────────────────────── -->
-    <div id="screen-reorder" class="screen">
-      <div class="tool-header">
-        <div class="back-btn" onclick="goHome()">←</div>
-        <div class="tool-title-block">
-          <div class="tool-title">Reorder Pages</div>
-          <div class="tool-subtitle">Drag to rearrange, tap ✕ to delete</div>
-        </div>
-      </div>
-
-      <div class="drop-zone" id="reorder-drop" onclick="document.getElementById('reorder-input').click()">
-        <input type="file" id="reorder-input" accept=".pdf" onchange="reorderLoad(this.files[0])">
-        <span class="drop-icon">↕️</span>
-        <div class="drop-title">Tap to choose PDF</div>
-        <div class="drop-hint">Then drag pages into order</div>
-      </div>
-
-      <div id="reorder-pages" class="pages-list"></div>
-
-      <div id="reorder-actions" style="display:none">
-        <button class="btn btn-primary" onclick="reorderDo()">💾 Save reordered PDF</button>
-      </div>
-    </div>
-
-    <!-- ── ROTATE ──────────────────────────── -->
-    <div id="screen-rotate" class="screen">
-      <div class="tool-header">
-        <div class="back-btn" onclick="goHome()">←</div>
-        <div class="tool-title-block">
-          <div class="tool-title">Rotate Pages</div>
-          <div class="tool-subtitle">Choose pages and rotation angle</div>
-        </div>
-      </div>
-
-      <div class="drop-zone" id="rotate-drop" onclick="document.getElementById('rotate-input').click()">
-        <input type="file" id="rotate-input" accept=".pdf" onchange="rotateLoad(this.files[0])">
-        <span class="drop-icon">🔄</span>
-        <div class="drop-title">Tap to choose PDF</div>
-        <div class="drop-hint">Then pick rotation</div>
-      </div>
-
-      <div id="rotate-options" style="display:none">
-        <div class="section-label" style="margin-bottom:8px">Which pages?</div>
-        <div class="chip-row">
-          <div class="chip active" id="chip-all-pages" onclick="rotatePagesMode('all')">All pages</div>
-          <div class="chip" id="chip-odd-pages" onclick="rotatePagesMode('odd')">Odd pages</div>
-          <div class="chip" id="chip-even-pages" onclick="rotatePagesMode('even')">Even pages</div>
-          <div class="chip" id="chip-custom-pages" onclick="rotatePagesMode('custom')">Custom</div>
-        </div>
-
-        <div id="rotate-custom-input" style="display:none;margin-top:12px">
-          <input class="input-field" id="rotate-pages-input" placeholder="e.g. 1,3,5-7">
-        </div>
-
-        <div class="spacer-md"></div>
-        <div class="section-label" style="margin-bottom:8px">Rotation</div>
-        <div class="chip-row">
-          <div class="chip active" id="chip-90cw" onclick="setRotation(90)">90° →</div>
-          <div class="chip" id="chip-180" onclick="setRotation(180)">180°</div>
-          <div class="chip" id="chip-90ccw" onclick="setRotation(270)">90° ←</div>
-        </div>
-
-        <div class="spacer-md"></div>
-        <button class="btn btn-primary" onclick="rotateDo()">🔄 Rotate PDF</button>
-      </div>
-
-      <div id="rotate-result"></div>
-    </div>
-
-    <!-- ── COMPRESS ────────────────────────── -->
-    <div id="screen-compress" class="screen">
-      <div class="tool-header">
-        <div class="back-btn" onclick="goHome()">←</div>
-        <div class="tool-title-block">
-          <div class="tool-title">Compress PDF</div>
-          <div class="tool-subtitle">Reduce file size by removing metadata</div>
-        </div>
-      </div>
-
-      <div class="drop-zone" id="compress-drop" onclick="document.getElementById('compress-input').click()">
-        <input type="file" id="compress-input" accept=".pdf" onchange="compressLoad(this.files[0])">
-        <span class="drop-icon">🗜️</span>
-        <div class="drop-title">Tap to choose PDF</div>
-        <div class="drop-hint">We'll strip metadata & optimize</div>
-      </div>
-
-      <div id="compress-options" style="display:none">
-        <div class="compress-visual">
-          <div class="compress-label">Image quality</div>
-          <div class="compress-dial" id="compress-dial">75%</div>
-          <input type="range" min="10" max="100" value="75" id="compress-slider" oninput="updateCompress(this.value)">
-          <div style="display:flex;justify-content:space-between;margin-top:6px">
-            <span class="text-sm">Smaller file</span>
-            <span class="text-sm">Better quality</span>
+      <div class="list-section">
+        <div class="list-section-header">Appearance</div>
+        <div class="control-group">
+          <div class="control-row" style="flex-direction:column;align-items:stretch;gap:12px">
+            <div class="theme-grid" id="theme-grid">
+              <div class="theme-card selected" data-theme="dark" onclick="setTheme('dark')">
+                <div class="theme-card-preview" style="background:#111114">
+                  <div class="theme-bar wide" style="background:#2a2a32"></div>
+                  <div class="theme-bar mid"  style="background:#1c1c21"></div>
+                  <div class="theme-bar short"style="background:#7c6ef7"></div>
+                </div>
+                <div class="theme-card-label" style="color:#f2f2f5">Dark</div>
+                <div class="theme-card-check">✓</div>
+              </div>
+              <div class="theme-card" data-theme="light" onclick="setTheme('light')">
+                <div class="theme-card-preview" style="background:#f5f5f7">
+                  <div class="theme-bar wide" style="background:#e8e8ed"></div>
+                  <div class="theme-bar mid"  style="background:#ffffff"></div>
+                  <div class="theme-bar short"style="background:#6058e8"></div>
+                </div>
+                <div class="theme-card-label" style="color:#1a1a1f">Light</div>
+                <div class="theme-card-check">✓</div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="spacer-md"></div>
-        <button class="btn btn-primary" onclick="compressDo()">🗜️ Compress PDF</button>
       </div>
 
-      <div id="compress-result"></div>
-    </div>
-
-    <!-- ── DELETE PAGES ────────────────────── -->
-    <div id="screen-delete-pages" class="screen">
-      <div class="tool-header">
-        <div class="back-btn" onclick="goHome()">←</div>
-        <div class="tool-title-block">
-          <div class="tool-title">Delete Pages</div>
-          <div class="tool-subtitle">Tap pages to mark for removal</div>
+      <div class="list-section">
+        <div class="list-section-header">Accent color</div>
+        <div class="control-group">
+          <div class="control-row" style="justify-content:center">
+            <div class="accent-row">
+              <div class="accent-dot selected" data-accent="default" style="background:linear-gradient(135deg,#7c6ef7,#9b90ff)" onclick="setAccent('default')" title="Violet"></div>
+              <div class="accent-dot" data-accent="accent-blue"    style="background:linear-gradient(135deg,#3b82f6,#60a5fa)" onclick="setAccent('accent-blue')"    title="Blue"></div>
+              <div class="accent-dot" data-accent="accent-rose"    style="background:linear-gradient(135deg,#f43f5e,#fb7185)" onclick="setAccent('accent-rose')"    title="Rose"></div>
+              <div class="accent-dot" data-accent="accent-emerald" style="background:linear-gradient(135deg,#10b981,#34d399)" onclick="setAccent('accent-emerald')" title="Emerald"></div>
+              <div class="accent-dot" data-accent="accent-orange"  style="background:linear-gradient(135deg,#f97316,#fb923c)" onclick="setAccent('accent-orange')"  title="Orange"></div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="drop-zone" id="delete-drop" onclick="document.getElementById('delete-input').click()">
-        <input type="file" id="delete-input" accept=".pdf" onchange="deleteLoad(this.files[0])">
-        <span class="drop-icon">🗑️</span>
-        <div class="drop-title">Tap to choose PDF</div>
-        <div class="drop-hint">Then select pages to remove</div>
-      </div>
-
-      <div id="delete-pages-list" class="pages-list"></div>
-
-      <div id="delete-actions" style="display:none">
-        <button class="btn btn-primary" id="delete-btn" onclick="deleteDo()">🗑️ Remove selected pages</button>
-      </div>
-
-      <div id="delete-result"></div>
-    </div>
-
-    <!-- ── WATERMARK ───────────────────────── -->
-    <div id="screen-watermark" class="screen">
-      <div class="tool-header">
-        <div class="back-btn" onclick="goHome()">←</div>
-        <div class="tool-title-block">
-          <div class="tool-title">Watermark</div>
-          <div class="tool-subtitle">Add diagonal text to all pages</div>
-        </div>
-      </div>
-
-      <div class="drop-zone" id="wm-drop" onclick="document.getElementById('wm-input').click()">
-        <input type="file" id="wm-input" accept=".pdf" onchange="wmLoad(this.files[0])">
-        <span class="drop-icon">💧</span>
-        <div class="drop-title">Tap to choose PDF</div>
-        <div class="drop-hint">Watermark will apply to every page</div>
-      </div>
-
-      <div id="wm-options" style="display:none">
+      <div class="list-section">
+        <div class="list-section-header">Preferences</div>
         <div class="control-group">
           <div class="control-row">
             <div>
-              <div class="control-label">Watermark text</div>
-              <div class="spacer-sm"></div>
-              <input class="input-field" id="wm-text" placeholder="e.g. CONFIDENTIAL" value="CONFIDENTIAL" oninput="wmPreviewUpdate()">
+              <div class="control-label">Haptic feedback</div>
+              <div class="control-sub">Vibrate on long-press drag</div>
             </div>
+            <input type="checkbox" class="toggle" id="pref-haptic" checked>
           </div>
           <div class="control-row">
-            <div class="control-label">Opacity</div>
-            <div class="control-value" id="wm-opacity-val">20%</div>
-          </div>
-          <div class="control-row" style="padding-top:4px">
-            <input type="range" min="5" max="80" value="20" id="wm-opacity" oninput="document.getElementById('wm-opacity-val').textContent=this.value+'%';wmPreviewUpdate()">
+            <div>
+              <div class="control-label">Auto-download</div>
+              <div class="control-sub">Download result immediately after processing</div>
+            </div>
+            <input type="checkbox" class="toggle" id="pref-autodl">
           </div>
           <div class="control-row">
-            <div class="control-label">Text color</div>
-            <div class="chip-row">
-              <div class="chip active" id="wm-color-black" onclick="setWmColor('black')">Black</div>
-              <div class="chip" id="wm-color-red" onclick="setWmColor('red')">Red</div>
-              <div class="chip" id="wm-color-blue" onclick="setWmColor('blue')">Blue</div>
-              <div class="chip" id="wm-color-gray" onclick="setWmColor('gray')">Gray</div>
+            <div>
+              <div class="control-label">Confirm before delete</div>
+              <div class="control-sub">Ask before removing pages</div>
             </div>
+            <input type="checkbox" class="toggle" id="pref-confirm" checked>
           </div>
         </div>
-
-        <div class="spacer-sm"></div>
-        <div class="wm-preview" id="wm-preview">
-          <div id="wm-preview-text">CONFIDENTIAL</div>
-        </div>
-
-        <div class="spacer-md"></div>
-        <button class="btn btn-primary" onclick="wmDo()">💧 Apply Watermark</button>
       </div>
 
-      <div id="wm-result"></div>
+      <div class="list-section">
+        <div class="list-section-header">About</div>
+        <div class="control-group">
+          <div class="control-row">
+            <div class="control-label">Privacy</div>
+            <div class="control-value" style="font-size:12px;max-width:55%;text-align:right;line-height:1.4">Files never leave your device</div>
+          </div>
+          <div class="control-row">
+            <div class="control-label">Built with</div>
+            <div class="control-value">pdf-lib + PDF.js</div>
+          </div>
+          <div class="control-row">
+            <div class="control-label">Version</div>
+            <div class="control-value">1.0.0</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:20px"></div>
     </div>
 
-  </main>
-  <div class="bottom-spacer"></div>
+    <!-- ── MERGE ──────────────────────────────── -->
+    <div id="screen-merge" class="screen">
+      <div class="tool-section">
+        <div class="drop-zone" id="merge-drop" onclick="document.getElementById('merge-input').click()">
+          <input type="file" id="merge-input" multiple accept=".pdf" onchange="mergeAddFiles(this.files)">
+          <span class="drop-icon">📂</span>
+          <div class="drop-title">Tap to add PDFs</div>
+          <div class="drop-hint">Select multiple files</div>
+        </div>
+        <div id="merge-list" class="pages-list"></div>
+        <div class="flex-row" id="merge-actions" style="display:none">
+          <button class="btn btn-secondary" onclick="mergeClear()">Clear</button>
+          <button class="btn btn-primary" onclick="mergeDo()">🔗 Merge</button>
+        </div>
+        <div id="merge-result"></div>
+      </div>
+    </div>
+
+    <!-- ── SPLIT ──────────────────────────────── -->
+    <div id="screen-split" class="screen">
+      <div class="tool-section">
+        <div class="drop-zone" id="split-drop" onclick="document.getElementById('split-input').click()">
+          <input type="file" id="split-input" accept=".pdf" onchange="splitLoad(this.files[0])">
+          <span class="drop-icon">✂️</span>
+          <div class="drop-title">Tap to choose PDF</div>
+          <div class="drop-hint">One file at a time</div>
+        </div>
+        <div id="split-file-info"></div>
+        <div id="split-options" style="display:none">
+          <div class="section-label" style="margin-bottom:8px">Split mode</div>
+          <div class="chip-row">
+            <div class="chip active" id="chip-each" onclick="splitMode('each')">Every page</div>
+            <div class="chip" id="chip-ranges" onclick="splitMode('ranges')">Custom ranges</div>
+          </div>
+          <div id="ranges-editor" style="display:none;margin-top:12px">
+            <div class="range-list" id="range-list"></div>
+            <div class="spacer-sm"></div>
+            <button class="btn btn-secondary" style="padding:10px" onclick="addRange()">+ Add range</button>
+          </div>
+          <div class="spacer-md"></div>
+          <button class="btn btn-primary" onclick="splitDo()">✂️ Split PDF</button>
+        </div>
+        <div id="split-result"></div>
+      </div>
+    </div>
+
+    <!-- ── REORDER ────────────────────────────── -->
+    <div id="screen-reorder" class="screen">
+      <div class="tool-section">
+        <div class="drop-zone" id="reorder-drop" onclick="document.getElementById('reorder-input').click()">
+          <input type="file" id="reorder-input" accept=".pdf" onchange="reorderLoad(this.files[0])">
+          <span class="drop-icon">↕️</span>
+          <div class="drop-title">Tap to choose PDF</div>
+          <div class="drop-hint">Tap pages to preview · hold to drag</div>
+        </div>
+        <div id="reorder-pages" class="pages-list"></div>
+        <div id="reorder-actions" style="display:none">
+          <button class="btn btn-primary" onclick="reorderDo()">💾 Save reordered PDF</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ROTATE ─────────────────────────────── -->
+    <div id="screen-rotate" class="screen">
+      <div class="tool-section">
+        <div class="drop-zone" id="rotate-drop" onclick="document.getElementById('rotate-input').click()">
+          <input type="file" id="rotate-input" accept=".pdf" onchange="rotateLoad(this.files[0])">
+          <span class="drop-icon">🔄</span>
+          <div class="drop-title">Tap to choose PDF</div>
+          <div class="drop-hint">Then pick rotation</div>
+        </div>
+        <div id="rotate-options" style="display:none">
+          <div class="section-label" style="margin-bottom:8px">Which pages?</div>
+          <div class="chip-row">
+            <div class="chip active" id="chip-all-pages"    onclick="rotatePagesMode('all')">All pages</div>
+            <div class="chip"        id="chip-odd-pages"    onclick="rotatePagesMode('odd')">Odd</div>
+            <div class="chip"        id="chip-even-pages"   onclick="rotatePagesMode('even')">Even</div>
+            <div class="chip"        id="chip-custom-pages" onclick="rotatePagesMode('custom')">Custom</div>
+          </div>
+          <div id="rotate-custom-input" style="display:none;margin-top:10px">
+            <input class="input-field" id="rotate-pages-input" placeholder="e.g. 1,3,5-7">
+          </div>
+          <div class="spacer-md"></div>
+          <div class="section-label" style="margin-bottom:8px">Rotation</div>
+          <div class="chip-row">
+            <div class="chip active" id="chip-90cw"  onclick="setRotation(90)">90° →</div>
+            <div class="chip"        id="chip-180"   onclick="setRotation(180)">180°</div>
+            <div class="chip"        id="chip-90ccw" onclick="setRotation(270)">90° ←</div>
+          </div>
+          <div class="spacer-md"></div>
+          <button class="btn btn-primary" onclick="rotateDo()">🔄 Rotate PDF</button>
+        </div>
+        <div id="rotate-result"></div>
+      </div>
+    </div>
+
+    <!-- ── COMPRESS ───────────────────────────── -->
+    <div id="screen-compress" class="screen">
+      <div class="tool-section">
+        <div class="drop-zone" id="compress-drop" onclick="document.getElementById('compress-input').click()">
+          <input type="file" id="compress-input" accept=".pdf" onchange="compressLoad(this.files[0])">
+          <span class="drop-icon">🗜️</span>
+          <div class="drop-title">Tap to choose PDF</div>
+          <div class="drop-hint">We'll strip metadata &amp; optimize</div>
+        </div>
+        <div id="compress-options" style="display:none">
+          <div class="compress-visual">
+            <div class="compress-label">Image quality target</div>
+            <div class="compress-dial" id="compress-dial">75%</div>
+            <input type="range" min="10" max="100" value="75" id="compress-slider" oninput="updateCompress(this.value)">
+            <div style="display:flex;justify-content:space-between;margin-top:6px">
+              <span style="font-size:11px;color:var(--text2)">Smaller</span>
+              <span style="font-size:11px;color:var(--text2)">Better quality</span>
+            </div>
+          </div>
+          <div class="spacer-md"></div>
+          <button class="btn btn-primary" onclick="compressDo()">🗜️ Compress PDF</button>
+        </div>
+        <div id="compress-result"></div>
+      </div>
+    </div>
+
+    <!-- ── DELETE PAGES ───────────────────────── -->
+    <div id="screen-delete-pages" class="screen">
+      <div class="tool-section">
+        <div class="drop-zone" id="delete-drop" onclick="document.getElementById('delete-input').click()">
+          <input type="file" id="delete-input" accept=".pdf" onchange="deleteLoad(this.files[0])">
+          <span class="drop-icon">🗑️</span>
+          <div class="drop-title">Tap to choose PDF</div>
+          <div class="drop-hint">Then tap pages to mark for removal</div>
+        </div>
+        <div id="delete-pages-list" class="pages-list"></div>
+        <div id="delete-actions" style="display:none">
+          <button class="btn btn-primary" id="delete-btn" onclick="deleteDo()">🗑️ Remove selected pages</button>
+        </div>
+        <div id="delete-result"></div>
+      </div>
+    </div>
+
+    <!-- ── WATERMARK ──────────────────────────── -->
+    <div id="screen-watermark" class="screen">
+      <div class="tool-section">
+        <div class="drop-zone" id="wm-drop" onclick="document.getElementById('wm-input').click()">
+          <input type="file" id="wm-input" accept=".pdf" onchange="wmLoad(this.files[0])">
+          <span class="drop-icon">💧</span>
+          <div class="drop-title">Tap to choose PDF</div>
+          <div class="drop-hint">Watermark applies to every page</div>
+        </div>
+        <div id="wm-options" style="display:none">
+          <div class="control-group">
+            <div class="control-row" style="flex-direction:column;align-items:stretch;gap:8px">
+              <div class="control-label">Watermark text</div>
+              <input class="input-field" id="wm-text" placeholder="e.g. CONFIDENTIAL" value="CONFIDENTIAL" oninput="wmPreviewUpdate()">
+            </div>
+            <div class="control-row">
+              <div class="control-label">Opacity</div>
+              <div class="control-value" id="wm-opacity-val">20%</div>
+            </div>
+            <div class="control-row" style="padding-top:2px">
+              <input type="range" min="5" max="80" value="20" id="wm-opacity" oninput="document.getElementById('wm-opacity-val').textContent=this.value+'%';wmPreviewUpdate()">
+            </div>
+            <div class="control-row" style="flex-wrap:wrap;gap:8px">
+              <div class="control-label">Color</div>
+              <div class="chip-row">
+                <div class="chip active" id="wm-color-black" onclick="setWmColor('black')">Black</div>
+                <div class="chip"        id="wm-color-red"   onclick="setWmColor('red')">Red</div>
+                <div class="chip"        id="wm-color-blue"  onclick="setWmColor('blue')">Blue</div>
+                <div class="chip"        id="wm-color-gray"  onclick="setWmColor('gray')">Gray</div>
+              </div>
+            </div>
+          </div>
+          <div class="wm-preview" id="wm-preview">
+            <div id="wm-preview-text">CONFIDENTIAL</div>
+          </div>
+          <div class="spacer-sm"></div>
+          <button class="btn btn-primary" onclick="wmDo()">💧 Apply Watermark</button>
+        </div>
+        <div id="wm-result"></div>
+      </div>
+    </div>
+
+  </div><!-- end scroll-area -->
+
+  <!-- Tab bar -->
+  <nav id="tab-bar">
+    <button class="tab-item active" id="tab-home" onclick="switchTab('home')">
+      <div class="tab-icon">🏠</div>
+      <div class="tab-label">Tools</div>
+    </button>
+    <button class="tab-item" id="tab-settings" onclick="switchTab('settings')">
+      <div class="tab-icon">⚙️</div>
+      <div class="tab-label">Settings</div>
+    </button>
+  </nav>
+</div>
+<!-- ── FULLSCREEN PAGE VIEWER ──────────────── -->
+<div id="page-viewer">
+  <div class="viewer-header">
+    <button class="viewer-close" onclick="viewerClose()">✕</button>
+    <div class="viewer-page-label" id="viewer-label">1 / 1</div>
+    <div style="width:38px"></div><!-- spacer to center label -->
+  </div>
+
+  <div class="viewer-track">
+    <div class="viewer-slides" id="viewer-slides"></div>
+    <button class="viewer-arrow prev" id="viewer-prev" onclick="viewerGo(-1)">‹</button>
+    <button class="viewer-arrow next" id="viewer-next" onclick="viewerGo(1)">›</button>
+  </div>
+
+  <div class="viewer-footer" id="viewer-dots"></div>
 </div>
 
 <div id="loading-overlay">
@@ -1248,20 +1458,135 @@ const state = {
   compressFile: null, compressBytes: null,
   deleteFile: null, deleteBytes: null, deletePageCount: 0, deletedPages: new Set(),
   wmFile: null, wmBytes: null, wmColor: 'black',
+  currentTool: null, // tracks which tool screen is open (null = home/settings tab)
 };
 
-// ─── NAVIGATION ──────────────────────────────────────────────────────────────
-function openTool(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + id).classList.add('active');
-  window.scrollTo(0,0);
+// ─── SETTINGS ────────────────────────────────────────────────────────────────
+const prefs = {
+  theme:   localStorage.getItem('pdfkit-theme')  || 'dark',
+  accent:  localStorage.getItem('pdfkit-accent') || 'default',
+  haptic:  localStorage.getItem('pdfkit-haptic')  !== 'false',
+  autoDl:  localStorage.getItem('pdfkit-autodl')  === 'true',
+  confirm: localStorage.getItem('pdfkit-confirm') !== 'false',
+};
+
+function applyPrefs() {
+  // Theme
+  document.documentElement.className = document.documentElement.className
+    .replace(/\b(light|dark)\b/g, '').trim();
+  if (prefs.theme === 'light') document.documentElement.classList.add('light');
+
+  // Accent
+  document.documentElement.className = document.documentElement.className
+    .replace(/\baccent-\S+/g, '').trim();
+  if (prefs.accent !== 'default') document.documentElement.classList.add(prefs.accent);
+
+  // Theme meta color
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (metaTheme) metaTheme.content = prefs.theme === 'light' ? '#f5f5f7' : '#0c0c0e';
+
+  // Sync UI
+  document.querySelectorAll('.theme-card').forEach(c =>
+    c.classList.toggle('selected', c.dataset.theme === prefs.theme));
+  document.querySelectorAll('.accent-dot').forEach(d =>
+    d.classList.toggle('selected', d.dataset.accent === prefs.accent));
+
+  const hapticEl = document.getElementById('pref-haptic');
+  const autoDlEl = document.getElementById('pref-autodl');
+  const confirmEl = document.getElementById('pref-confirm');
+  if (hapticEl)  hapticEl.checked  = prefs.haptic;
+  if (autoDlEl)  autoDlEl.checked  = prefs.autoDl;
+  if (confirmEl) confirmEl.checked = prefs.confirm;
 }
 
-function goHome() {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-home').classList.add('active');
-  window.scrollTo(0,0);
+function setTheme(t) {
+  prefs.theme = t;
+  localStorage.setItem('pdfkit-theme', t);
+  applyPrefs();
 }
+
+function setAccent(a) {
+  prefs.accent = a;
+  localStorage.setItem('pdfkit-accent', a);
+  applyPrefs();
+}
+
+// Wire up preference toggles
+window.addEventListener('DOMContentLoaded', () => {
+  applyPrefs();
+  document.getElementById('pref-haptic').addEventListener('change', e => {
+    prefs.haptic = e.target.checked;
+    localStorage.setItem('pdfkit-haptic', e.target.checked);
+  });
+  document.getElementById('pref-autodl').addEventListener('change', e => {
+    prefs.autoDl = e.target.checked;
+    localStorage.setItem('pdfkit-autodl', e.target.checked);
+  });
+  document.getElementById('pref-confirm').addEventListener('change', e => {
+    prefs.confirm = e.target.checked;
+    localStorage.setItem('pdfkit-confirm', e.target.checked);
+  });
+});
+
+// ─── NAVIGATION ──────────────────────────────────────────────────────────────
+const TOOL_TITLES = {
+  merge: 'Merge PDFs', split: 'Split PDF', reorder: 'Reorder Pages',
+  rotate: 'Rotate Pages', compress: 'Compress', 'delete-pages': 'Delete Pages',
+  watermark: 'Watermark'
+};
+
+let _activeTabScreen = 'home'; // home or settings
+
+function switchTab(tab) {
+  if (state.currentTool) return; // don't switch tabs when a tool is open
+  _activeTabScreen = tab;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + tab).classList.add('active');
+
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+
+  setNavBar(null); // home bar
+  document.getElementById('scroll-area').scrollTop = 0;
+}
+
+function setNavBar(toolId) {
+  const nav = document.getElementById('top-nav');
+  const title = document.getElementById('nav-title');
+  if (toolId) {
+    nav.classList.add('tool-nav');
+    title.textContent = TOOL_TITLES[toolId] || '';
+  } else {
+    nav.classList.remove('tool-nav');
+    title.textContent = '';
+  }
+}
+
+function openTool(id) {
+  state.currentTool = id;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const screen = document.getElementById('screen-' + id);
+  screen.classList.add('active', 'slide-in');
+  setTimeout(() => screen.classList.remove('slide-in'), 300);
+  setNavBar(id);
+  document.getElementById('scroll-area').scrollTop = 0;
+}
+
+function goBack() {
+  if (!state.currentTool) return;
+  state.currentTool = null;
+  // Animate out
+  document.querySelectorAll('.screen.active').forEach(s => {
+    s.classList.add('slide-out');
+    setTimeout(() => { s.classList.remove('active', 'slide-out'); }, 220);
+  });
+  setTimeout(() => {
+    document.getElementById('screen-' + _activeTabScreen).classList.add('active');
+  }, 180);
+  setNavBar(null);
+}
+
+function goHome() { goBack(); } // alias kept for existing onclick refs
 
 // ─── TOAST ───────────────────────────────────────────────────────────────────
 function toast(msg, type='info', icon='') {
@@ -1326,10 +1651,10 @@ function resultArea(items) {
   const area = document.createElement('div');
   area.className = 'result-area';
 
-  const title = document.createElement('div');
-  title.className = 'section-label';
-  title.textContent = 'OUTPUT';
-  area.appendChild(title);
+  const hdr = document.createElement('div');
+  hdr.className = 'result-header';
+  hdr.textContent = `OUTPUT — ${items.length} file${items.length > 1 ? 's' : ''}`;
+  area.appendChild(hdr);
 
   items.forEach(({ name, size, bytes }) => {
     const row = document.createElement('div');
@@ -1341,21 +1666,29 @@ function resultArea(items) {
         <div class="result-meta">${fmtBytes(size)}</div>
       </div>
     `;
-    const dl = document.createElement('a');
+    const dl = document.createElement('button');
     dl.className = 'result-dl';
     dl.textContent = '↓';
-    dl.href = '#';
-    dl.onclick = (e) => { e.preventDefault(); downloadBytes(bytes, name); };
+    dl.onclick = () => downloadBytes(bytes, name);
     row.appendChild(dl);
     area.appendChild(row);
   });
 
   if (items.length > 1) {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'padding:12px 16px;border-top:1px solid var(--border)';
     const allBtn = document.createElement('button');
     allBtn.className = 'btn btn-secondary';
+    allBtn.style.padding = '12px';
     allBtn.textContent = `↓ Download all (${items.length})`;
-    allBtn.onclick = () => items.forEach(i => setTimeout(() => downloadBytes(i.bytes, i.name), 100));
-    area.appendChild(allBtn);
+    allBtn.onclick = () => items.forEach((i, idx) => setTimeout(() => downloadBytes(i.bytes, i.name), idx * 80));
+    wrap.appendChild(allBtn);
+    area.appendChild(wrap);
+  }
+
+  // Auto-download if pref enabled
+  if (prefs.autoDl) {
+    setTimeout(() => items.forEach((i, idx) => setTimeout(() => downloadBytes(i.bytes, i.name), idx * 80)), 200);
   }
 
   return area;
@@ -1472,7 +1805,7 @@ function renderSplitPageStrip() {
     wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;';
     const thumb = document.createElement('div');
     thumb.className = 'page-thumb';
-    thumb.style.cssText = 'width:42px;height:56px;flex-shrink:0;';
+    thumb.style.cssText = 'width:42px;height:56px;flex-shrink:0;cursor:pointer;';
     const num = document.createElement('div');
     num.style.cssText = 'font-size:10px;color:var(--text3);font-family:var(--mono);';
     num.textContent = i + 1;
@@ -1480,6 +1813,12 @@ function renderSplitPageStrip() {
     wrap.appendChild(num);
     strip.appendChild(wrap);
     if (state.splitPdfJs) renderThumb(state.splitPdfJs, i, thumb, 0.15);
+    // Tap to open viewer
+    const capturedI = i;
+    thumb.addEventListener('click', () => {
+      const allIndices = Array.from({length: state.splitPageCount}, (_,j) => j);
+      openViewer(state.splitPdfJs, allIndices, capturedI, 'split');
+    });
   }
 
   const opts = document.getElementById('split-options');
@@ -1683,75 +2022,55 @@ function renderReorderList() {
   });
 }
 
-// ─── ANIMATED REORDER DRAG (FLIP technique) ───────────────────────────────────
+// ─── ANIMATED REORDER DRAG (FLIP + long-press) ───────────────────────────────
 let reorderDragSrc = null;
 let reorderDragSrcIdx = -1;
 let reorderHoverIdx = -1;
 
+// Long-press config
+const LONG_PRESS_MS = 480;
+
 function setupReorderDrag(item, list) {
-  // Desktop drag
-  item.setAttribute('draggable', 'true');
+  item.setAttribute('draggable', 'false'); // we control drag manually
 
-  item.addEventListener('dragstart', (e) => {
-    reorderDragSrc = item;
-    reorderDragSrcIdx = +item.dataset.pos;
-    e.dataTransfer.effectAllowed = 'move';
-    // Snapshot all item positions before anything moves
-    snapPositions(list);
-    setTimeout(() => item.classList.add('is-lifted'), 0);
+  let longPressTimer = null;
+  let isDragging = false;
+  let didLongPress = false;
+
+  // ── Pointer events (unified mouse + touch) ──────────────────────
+  item.addEventListener('pointerdown', (e) => {
+    if (e.button !== undefined && e.button !== 0) return;
+    isDragging = false;
+    didLongPress = false;
+
+    // Start long-press timer
+    longPressTimer = setTimeout(() => {
+      didLongPress = true;
+      isDragging = true;
+      reorderDragSrc = item;
+      reorderDragSrcIdx = +item.dataset.pos;
+      snapPositions(list);
+      item.classList.add('is-lifted');
+      // Haptic if available
+      if (prefs.haptic && navigator.vibrate) navigator.vibrate(30);
+      // Visual pulse on activate
+      item.classList.add('drag-ready');
+      setTimeout(() => item.classList.remove('drag-ready'), 400);
+      list.classList.add('drag-mode');
+      // Capture pointer so move events keep coming
+      item.setPointerCapture(e.pointerId);
+    }, LONG_PRESS_MS);
   });
 
-  item.addEventListener('dragend', () => {
-    item.classList.remove('is-lifted');
-    clearSlotIndicators(list);
-    reorderDragSrc = null;
-    reorderDragSrcIdx = -1;
-    reorderHoverIdx = -1;
-  });
-
-  item.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    const toIdx = +item.dataset.pos;
-    if (reorderDragSrc && toIdx !== reorderHoverIdx) {
-      reorderHoverIdx = toIdx;
-      clearSlotIndicators(list);
-      const fromIdx = +reorderDragSrc.dataset.pos;
-      if (toIdx > fromIdx) item.classList.add('slot-below');
-      else item.classList.add('slot-above');
+  item.addEventListener('pointermove', (e) => {
+    if (!isDragging) {
+      // Cancel long press if finger moves too much before threshold
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+      return;
     }
-  });
-
-  item.addEventListener('dragleave', (e) => {
-    if (!item.contains(e.relatedTarget)) {
-      item.classList.remove('slot-above', 'slot-below');
-    }
-  });
-
-  item.addEventListener('drop', (e) => {
     e.preventDefault();
-    clearSlotIndicators(list);
-    if (!reorderDragSrc || reorderDragSrc === item) return;
-    const from = +reorderDragSrc.dataset.pos;
-    const to   = +item.dataset.pos;
-    flipReorder(list, from, to);
-  });
-
-  // ── Touch drag ──────────────────────────────────────────────────
-  let touchStartY = 0;
-  let lastTouchedEl = null;
-
-  item.addEventListener('touchstart', (e) => {
-    touchStartY = e.touches[0].clientY;
-    reorderDragSrc = item;
-    reorderDragSrcIdx = +item.dataset.pos;
-    snapPositions(list);
-    item.classList.add('is-lifted');
-  }, { passive: true });
-
-  item.addEventListener('touchmove', (e) => {
-    e.preventDefault();
-    const y = e.touches[0].clientY;
+    const y = e.clientY;
     const els = [...list.querySelectorAll('.page-item')];
     let target = null;
     for (const el of els) {
@@ -1761,26 +2080,47 @@ function setupReorderDrag(item, list) {
         break;
       }
     }
-    if (target && target !== lastTouchedEl) {
-      lastTouchedEl = target;
-      clearSlotIndicators(list);
+    clearSlotIndicators(list);
+    if (target) {
       const from = +reorderDragSrc.dataset.pos;
       const to = +target.dataset.pos;
       if (to > from) target.classList.add('slot-below');
       else target.classList.add('slot-above');
+      reorderHoverIdx = to;
     }
   }, { passive: false });
 
-  item.addEventListener('touchend', () => {
+  item.addEventListener('pointerup', (e) => {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+
+    if (isDragging) {
+      item.classList.remove('is-lifted');
+      clearSlotIndicators(list);
+      list.classList.remove('drag-mode');
+      const hovered = list.querySelector('.slot-above, .slot-below');
+      if (hovered && hovered !== item) {
+        const from = +item.dataset.pos;
+        const to = +hovered.dataset.pos;
+        flipReorder(list, from, to);
+      }
+      isDragging = false;
+      reorderDragSrc = null;
+      reorderHoverIdx = -1;
+    } else if (!didLongPress) {
+      // It was a tap — open the viewer
+      const origIdx = +item.dataset.origIdx;
+      openViewer(state.reorderPdfJs, state.reorderOrder, origIdx, 'reorder');
+    }
+  });
+
+  item.addEventListener('pointercancel', () => {
+    clearTimeout(longPressTimer);
     item.classList.remove('is-lifted');
     clearSlotIndicators(list);
-    if (lastTouchedEl && lastTouchedEl !== item) {
-      const from = +item.dataset.pos;
-      const to = +lastTouchedEl.dataset.pos;
-      flipReorder(list, from, to);
-    }
+    list.classList.remove('drag-mode');
+    isDragging = false;
     reorderDragSrc = null;
-    lastTouchedEl = null;
   });
 }
 
@@ -2049,6 +2389,13 @@ function renderDeleteList() {
     }
 
     const thumbEl = makeThumbEl(i);
+    // Tap thumb = open viewer; tap rest of row = toggle mark
+    thumbEl.style.cursor = 'pointer';
+    thumbEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const allIndices = Array.from({length: state.deletePageCount}, (_,j) => j);
+      openViewer(state.deletePdfJs, allIndices, i, 'delete');
+    });
 
     item.appendChild(thumbEl);
     item.insertAdjacentHTML('beforeend', `
@@ -2185,6 +2532,187 @@ async function wmDo() {
     toast('Watermark applied!', 'success');
   } catch(e) { hideLoading(); toast('Error: ' + e.message, 'error'); }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FULLSCREEN PAGE VIEWER
+// ═══════════════════════════════════════════════════════════════════════════════
+const viewer = {
+  pdfDoc: null,
+  pages: [],       // array of original page indices in display order
+  currentIdx: 0,   // index into pages[]
+  rendered: new Set(),
+  toolKey: '',
+};
+
+function openViewer(pdfDoc, pagesOrder, startOrigIdx, toolKey) {
+  if (!pdfDoc) { toast('No preview available', 'info'); return; }
+
+  viewer.pdfDoc = pdfDoc;
+  viewer.pages = [...pagesOrder];
+  viewer.toolKey = toolKey;
+  // Find position of startOrigIdx in pages array
+  viewer.currentIdx = viewer.pages.indexOf(startOrigIdx);
+  if (viewer.currentIdx < 0) viewer.currentIdx = 0;
+  viewer.rendered.clear();
+
+  buildViewerSlides();
+  viewerSetSlide(viewer.currentIdx, false);
+
+  document.getElementById('page-viewer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // Keyboard nav
+  document.addEventListener('keydown', viewerKeyHandler);
+}
+
+function buildViewerSlides() {
+  const slidesEl = document.getElementById('viewer-slides');
+  const dotsEl = document.getElementById('viewer-dots');
+  slidesEl.innerHTML = '';
+  dotsEl.innerHTML = '';
+
+  viewer.pages.forEach((origIdx, i) => {
+    // Slide
+    const slide = document.createElement('div');
+    slide.className = 'viewer-slide';
+    slide.dataset.slideIdx = i;
+    const spinner = document.createElement('div');
+    spinner.className = 'viewer-slide-spinner';
+    slide.appendChild(spinner);
+    slidesEl.appendChild(slide);
+
+    // Dot (only show if ≤ 20 pages, otherwise skip dots)
+    if (viewer.pages.length <= 20) {
+      const dot = document.createElement('div');
+      dot.className = 'viewer-dot';
+      dot.dataset.idx = i;
+      dot.onclick = () => viewerSetSlide(i, true);
+      dotsEl.appendChild(dot);
+    }
+  });
+}
+
+async function viewerRenderSlide(idx) {
+  if (viewer.rendered.has(idx)) return;
+  viewer.rendered.add(idx);
+
+  const slidesEl = document.getElementById('viewer-slides');
+  const slide = slidesEl.children[idx];
+  if (!slide) return;
+
+  const origIdx = viewer.pages[idx];
+  try {
+    const page = await viewer.pdfDoc.getPage(origIdx + 1);
+    const container = slide.getBoundingClientRect();
+    const maxW = window.innerWidth - 24;
+    const maxH = window.innerHeight - 150;
+    const vp0 = page.getViewport({ scale: 1 });
+    const scale = Math.min(maxW / vp0.width, maxH / vp0.height, 2.5);
+    const viewport = page.getViewport({ scale });
+
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    const ctx = canvas.getContext('2d');
+    await page.render({ canvasContext: ctx, viewport }).promise;
+
+    // Replace spinner
+    slide.innerHTML = '';
+    slide.appendChild(canvas);
+    // Fade in
+    requestAnimationFrame(() => canvas.classList.add('loaded'));
+  } catch(e) {
+    slide.innerHTML = `<div style="color:var(--text3);font-size:13px">Page ${origIdx+1}</div>`;
+  }
+}
+
+function viewerSetSlide(idx, animate = true) {
+  if (idx < 0 || idx >= viewer.pages.length) return;
+  viewer.currentIdx = idx;
+
+  const slidesEl = document.getElementById('viewer-slides');
+  slidesEl.style.transition = animate
+    ? 'transform 0.35s cubic-bezier(0.4,0,0.2,1)'
+    : 'none';
+  slidesEl.style.transform = `translateX(${-idx * 100}vw)`;
+
+  // Update label
+  document.getElementById('viewer-label').textContent =
+    `${idx + 1} / ${viewer.pages.length}`;
+
+  // Update dots
+  document.querySelectorAll('.viewer-dot').forEach((d, i) => {
+    d.classList.toggle('active', i === idx);
+  });
+
+  // Arrows
+  document.getElementById('viewer-prev').classList.toggle('hidden', idx === 0);
+  document.getElementById('viewer-next').classList.toggle('hidden', idx === viewer.pages.length - 1);
+
+  // Render current + adjacent
+  viewerRenderSlide(idx);
+  if (idx > 0) viewerRenderSlide(idx - 1);
+  if (idx < viewer.pages.length - 1) viewerRenderSlide(idx + 1);
+}
+
+function viewerGo(dir) {
+  viewerSetSlide(viewer.currentIdx + dir, true);
+}
+
+function viewerClose() {
+  document.getElementById('page-viewer').classList.remove('open');
+  document.body.style.overflow = '';
+  document.removeEventListener('keydown', viewerKeyHandler);
+  viewer.rendered.clear();
+}
+
+function viewerKeyHandler(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') viewerGo(1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   viewerGo(-1);
+  if (e.key === 'Escape') viewerClose();
+}
+
+// ── Swipe gesture for viewer ──────────────────────────────────────────────────
+(function() {
+  const vEl = document.getElementById('page-viewer');
+  let sx = 0, sy = 0, swiping = false;
+
+  vEl.addEventListener('pointerdown', (e) => {
+    // Only track on the slides area, not buttons
+    if (e.target.closest('.viewer-close, .viewer-arrow, .viewer-dot')) return;
+    sx = e.clientX;
+    sy = e.clientY;
+    swiping = true;
+  });
+
+  vEl.addEventListener('pointermove', (e) => {
+    if (!swiping) return;
+    const dx = e.clientX - sx;
+    const dy = e.clientY - sy;
+    // Only horizontal swipes
+    if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) {
+      const slidesEl = document.getElementById('viewer-slides');
+      const base = -viewer.currentIdx * window.innerWidth;
+      slidesEl.style.transition = 'none';
+      slidesEl.style.transform = `translateX(${base + dx}px)`;
+    }
+  });
+
+  vEl.addEventListener('pointerup', (e) => {
+    if (!swiping) return;
+    swiping = false;
+    const dx = e.clientX - sx;
+    const threshold = window.innerWidth * 0.25;
+    if (dx < -threshold) viewerGo(1);
+    else if (dx > threshold) viewerGo(-1);
+    else viewerSetSlide(viewer.currentIdx, true); // snap back
+  });
+
+  vEl.addEventListener('pointercancel', () => {
+    swiping = false;
+    viewerSetSlide(viewer.currentIdx, true);
+  });
+})();
+
 
 // ─── SERVICE WORKER ───────────────────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
