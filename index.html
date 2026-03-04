@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>PDF Utility · simple & clean</title>
+  <!-- PWA manifest -->
+  <link rel="manifest" href="manifest.json">
+  <!-- Font Awesome icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #f4f6fa;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 16px 12px 90px 12px;
+    }
+
+    .app-container {
+      max-width: 700px;
+      width: 100%;
+      background: white;
+      border-radius: 32px 32px 24px 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+      overflow: hidden;
+      padding: 20px 16px 16px 16px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding: 0 4px;
+    }
+
+    .header i {
+      font-size: 28px;
+      color: #2c3e50;
+      background: #eef2f7;
+      padding: 10px;
+      border-radius: 18px;
+    }
+
+    .header h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: #1e2b37;
+      letter-spacing: -0.3px;
+    }
+
+    .upload-area {
+      background: #f8fafd;
+      border: 2px dashed #b0c4d9;
+      border-radius: 24px;
+      padding: 28px 16px;
+      text-align: center;
+      margin-bottom: 24px;
+      transition: border 0.2s;
+      cursor: pointer;
+    }
+
+    .upload-area:hover {
+      border-color: #3a7bd5;
+    }
+
+    .upload-area i {
+      font-size: 40px;
+      color: #5f7d9e;
+      margin-bottom: 10px;
+    }
+
+    .upload-area p {
+      color: #2d4059;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .upload-area small {
+      color: #7f8fa6;
+      font-size: 13px;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      margin: 20px 0;
+      color: #3a7bd5;
+    }
+
+    .loading i {
+      font-size: 24px;
+      animation: spin 1s infinite linear;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .thumbnails {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+      margin: 20px 0 24px;
+      max-height: 55vh;
+      overflow-y: auto;
+      padding: 6px 4px;
+    }
+
+    .thumbnail-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      border: 1px solid #e9ecf2;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.1s;
+    }
+
+    .thumbnail-card.sortable-ghost {
+      opacity: 0.4;
+      background: #c8d9f0;
+    }
+
+    .thumb-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 8px 4px 8px;
+    }
+
+    .drag-handle {
+      font-size: 18px;
+      color: #95a5b8;
+      cursor: grab;
+      padding: 4px;
+      touch-action: none; /* improves touch dragging */
+    }
+
+    .drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .page-check {
+      width: 22px;
+      height: 22px;
+      accent-color: #3a7bd5;
+    }
+
+    .thumb-image {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      padding: 0 8px 8px 8px;
+    }
+
+    .thumb-image canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 8px;
+      border: 1px solid #dee4ed;
+    }
+
+    .page-number {
+      font-size: 12px;
+      color: #4b5c6e;
+      text-align: center;
+      padding: 4px 0 8px;
+      background: #fcfdff;
+    }
+
+    .action-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 16px;
+      margin-bottom: 8px;
+    }
+
+    .btn {
+      background: white;
+      border: 1px solid #cad3df;
+      border-radius: 40px;
+      padding: 12px 16px;
+      font-size: 15px;
+      font-weight: 500;
+      color: #1e2b37;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+      flex: 1 0 auto;
+      justify-content: center;
+    }
+
+    .btn i {
+      font-size: 16px;
+      color: #5f7d9e;
+    }
+
+    .btn-primary {
+      background: #1e2b37;
+      border-color: #1e2b37;
+      color: white;
+    }
+
+    .btn-primary i {
+      color: white;
+    }
+
+    .btn-danger {
+      border-color: #ffb0b0;
+      color: #b0003a;
+    }
+
+    .btn-danger i {
+      color: #b0003a;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+      background: #eef2f7;
+    }
+
+    .btn-primary:active {
+      background: #2c4053;
+    }
+
+    .footer-note {
+      font-size: 12px;
+      color: #99a9bc;
+      text-align: center;
+      margin-top: 24px;
+      border-top: 1px solid #edf2f7;
+      padding-top: 16px;
+    }
+
+    /* bottom fixed area for mobile */
+    .sticky-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      padding: 12px 16px 20px;
+      box-shadow: 0 -5px 20px rgba(0,0,0,0.03);
+      border-top: 1px solid #e3eaf2;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,0.9);
+    }
+
+    .sticky-footer .btn {
+      flex: 1;
+      max-width: 160px;
+    }
+
+    /* empty state */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #9dadc1;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <div class="header">
+      <i class="fas fa-file-pdf"></i>
+      <h1>PDF Utility</h1>
+    </div>
+
+    <!-- Upload area -->
+    <div class="upload-area" id="uploadArea">
+      <i class="fas fa-cloud-upload-alt"></i>
+      <p>Tap to choose a PDF</p>
+      <small>or drag & drop</small>
+      <input type="file" id="fileInput" accept=".pdf" hidden>
+    </div>
+
+    <!-- Loading indicator -->
+    <div class="loading" id="loading">
+      <i class="fas fa-spinner"></i> Rendering pages…
+    </div>
+
+    <!-- Thumbnail grid -->
+    <div id="thumbnailContainer" class="thumbnails"></div>
+
+    <!-- Empty state (shown initially) -->
+    <div id="emptyState" class="empty-state">
+      <i class="fas fa-hand-pointer" style="font-size: 40px; margin-bottom: 12px;"></i>
+      <p>No PDF loaded</p>
+    </div>
+
+    <!-- Action buttons (inside main container, hidden until PDF loaded) -->
+    <div id="actionBar" class="action-bar" style="display: none;">
+      <button class="btn" id="selectAllBtn"><i class="far fa-check-square"></i> All</button>
+      <button class="btn" id="deselectAllBtn"><i class="far fa-square"></i> None</button>
+    </div>
+  </div>
+
+  <!-- Sticky footer with main actions (always visible but disabled until PDF loaded) -->
+  <div class="sticky-footer">
+    <button class="btn" id="downloadAllBtn" disabled><i class="fas fa-download"></i> All</button>
+    <button class="btn" id="downloadSelectedBtn" disabled><i class="fas fa-copy"></i> Selected</button>
+    <button class="btn btn-danger" id="deleteSelectedBtn" disabled><i class="fas fa-trash-alt"></i> Delete</button>
+    <button class="btn btn-primary" id="splitSelectedBtn" disabled><i class="fas fa-cut"></i> Split</button>
+  </div>
+
+  <!-- Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script>
+    // Configure PDF.js worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+    // DOM elements
+    const fileInput = document.getElementById('fileInput');
+    const uploadArea = document.getElementById('uploadArea');
+    const loadingDiv = document.getElementById('loading');
+    const thumbnailContainer = document.getElementById('thumbnailContainer');
+    const emptyState = document.getElementById('emptyState');
+    const actionBar = document.getElementById('actionBar');
+    const downloadAllBtn = document.getElementById('downloadAllBtn');
+    const downloadSelectedBtn = document.getElementById('downloadSelectedBtn');
+    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+    const splitSelectedBtn = document.getElementById('splitSelectedBtn');
+    const selectAllBtn = document.getElementById('selectAllBtn');
+    const deselectAllBtn = document.getElementById('deselectAllBtn');
+
+    // App state
+    let originalPdfBytes = null;          // ArrayBuffer of original PDF
+    let pdfDocProxy = null;               // PDF.js proxy (for rendering)
+    let totalPages = 0;
+    let sortableInstance = null;
+
+    // ---------- Helper: reset UI after file load ----------
+    function enableButtons(enable = true) {
+      [downloadAllBtn, downloadSelectedBtn, deleteSelectedBtn, splitSelectedBtn].forEach(btn => {
+        btn.disabled = !enable;
+      });
+      if (enable) {
+        actionBar.style.display = 'flex';
+        emptyState.style.display = 'none';
+      } else {
+        actionBar.style.display = 'none';
+        emptyState.style.display = 'block';
+      }
+    }
+
+    // ---------- Render thumbnails from PDF.js ----------
+    async function renderThumbnails(pdfProxy) {
+      thumbnailContainer.innerHTML = '';
+      for (let i = 1; i <= pdfProxy.numPages; i++) {
+        const page = await pdfProxy.getPage(i);
+        const viewport = page.getViewport({ scale: 0.3 }); // small thumbnail
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        await page.render({ canvasContext: context, viewport }).promise;
+
+        // Create card
+        const card = document.createElement('div');
+        card.className = 'thumbnail-card';
+        card.dataset.pageIndex = i - 1; // zero-based original index
+
+        // Header with drag handle and checkbox
+        const header = document.createElement('div');
+        header.className = 'thumb-header';
+        header.innerHTML = `
+          <i class="fas fa-grip-vertical drag-handle"></i>
+          <input type="checkbox" class="page-check">
+        `;
+        // Image wrapper
+        const imgWrapper = document.createElement('div');
+        imgWrapper.className = 'thumb-image';
+        imgWrapper.appendChild(canvas);
+        // Page number
+        const pageNumDiv = document.createElement('div');
+        pageNumDiv.className = 'page-number';
+        pageNumDiv.textContent = `Page ${i}`;
+
+        card.appendChild(header);
+        card.appendChild(imgWrapper);
+        card.appendChild(pageNumDiv);
+        thumbnailContainer.appendChild(card);
+      }
+    }
+
+    // ---------- Load PDF from File ----------
+    async function loadPdf(file) {
+      // Read file as ArrayBuffer
+      const arrayBuffer = await file.arrayBuffer();
+      originalPdfBytes = new Uint8Array(arrayBuffer);
+
+      // Load with PDF.js for rendering
+      loadingDiv.style.display = 'block';
+      try {
+        const pdfProxy = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        pdfDocProxy = pdfProxy;
+        totalPages = pdfProxy.numPages;
+
+        await renderThumbnails(pdfProxy);
+
+        // Enable Sortable after thumbnails are in DOM
+        if (sortableInstance) sortableInstance.destroy();
+        sortableInstance = new Sortable(thumbnailContainer, {
+          animation: 200,
+          handle: '.drag-handle',
+          ghostClass: 'sortable-ghost',
+          onEnd: function() { /* order changed, no extra action needed */ }
+        });
+
+        enableButtons(true);
+      } catch (error) {
+        alert('Failed to load PDF: ' + error.message);
+      } finally {
+        loadingDiv.style.display = 'none';
+      }
+    }
+
+    // ---------- Generate PDF from selected thumbnails (based on current DOM order) ----------
+    async function createPdfFromIndices(indices) {
+      if (!indices.length) return null;
+      const { PDFDocument } = PDFLib;
+      const originalDoc = await PDFDocument.load(originalPdfBytes);
+      const newDoc = await PDFDocument.create();
+      for (const idx of indices) {
+        const [page] = await newDoc.copyPages(originalDoc, [idx]);
+        newDoc.addPage(page);
+      }
+      const pdfBytes = await newDoc.save();
+      return pdfBytes;
+    }
+
+    // ---------- Download a single PDF blob ----------
+    function downloadPdf(bytes, filename = 'output.pdf') {
+      const blob = new Blob([bytes], { type: 'application/pdf' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    // ---------- Get current page indices from DOM (in order) ----------
+    function getCurrentPageIndices() {
+      return Array.from(thumbnailContainer.querySelectorAll('.thumbnail-card')).map(card => 
+        parseInt(card.dataset.pageIndex)
+      );
+    }
+
+    // ---------- Get selected page indices (in DOM order) ----------
+    function getSelectedIndices() {
+      const indices = [];
+      const cards = thumbnailContainer.querySelectorAll('.thumbnail-card');
+      cards.forEach(card => {
+        const cb = card.querySelector('.page-check');
+        if (cb.checked) {
+          indices.push(parseInt(card.dataset.pageIndex));
+        }
+      });
+      return indices;
+    }
+
+    // ---------- Event Handlers ----------
+    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.style.borderColor = '#3a7bd5';
+    });
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.style.borderColor = '#b0c4d9';
+    });
+    uploadArea.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      uploadArea.style.borderColor = '#b0c4d9';
+      const file = e.dataTransfer.files[0];
+      if (file && file.type === 'application/pdf') {
+        await loadPdf(file);
+      } else {
+        alert('Please drop a PDF file.');
+      }
+    });
+
+    fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) await loadPdf(file);
+    });
+
+    // Download all pages (current order)
+    downloadAllBtn.addEventListener('click', async () => {
+      const indices = getCurrentPageIndices();
+      if (!indices.length) return;
+      const pdfBytes = await createPdfFromIndices(indices);
+      downloadPdf(pdfBytes, 'reordered.pdf');
+    });
+
+    // Download selected pages as one PDF
+    downloadSelectedBtn.addEventListener('click', async () => {
+      const selected = getSelectedIndices();
+      if (selected.length === 0) {
+        alert('No pages selected.');
+        return;
+      }
+      const pdfBytes = await createPdfFromIndices(selected);
+      downloadPdf(pdfBytes, 'selected.pdf');
+    });
+
+    // Delete selected pages (remove from DOM)
+    deleteSelectedBtn.addEventListener('click', () => {
+      const cards = thumbnailContainer.querySelectorAll('.thumbnail-card');
+      cards.forEach(card => {
+        const cb = card.querySelector('.page-check');
+        if (cb.checked) card.remove();
+      });
+      if (thumbnailContainer.children.length === 0) {
+        enableButtons(false);
+        originalPdfBytes = null;
+      }
+    });
+
+    // Split selected pages into individual PDFs (if one, download directly; if many, zip)
+    splitSelectedBtn.addEventListener('click', async () => {
+      const selected = getSelectedIndices();
+      if (selected.length === 0) {
+        alert('No pages selected.');
+        return;
+      }
+
+      loadingDiv.style.display = 'block';
+      try {
+        if (selected.length === 1) {
+          // Single page: just download one PDF
+          const pdfBytes = await createPdfFromIndices([selected[0]]);
+          downloadPdf(pdfBytes, `page_${selected[0]+1}.pdf`);
+        } else {
+          // Multiple pages: create a ZIP
+          const zip = new JSZip();
+          const { PDFDocument } = PDFLib;
+          const originalDoc = await PDFDocument.load(originalPdfBytes);
+
+          for (let i = 0; i < selected.length; i++) {
+            const idx = selected[i];
+            const newDoc = await PDFDocument.create();
+            const [page] = await newDoc.copyPages(originalDoc, [idx]);
+            newDoc.addPage(page);
+            const pdfBytes = await newDoc.save();
+            zip.file(`page_${idx+1}.pdf`, pdfBytes);
+          }
+
+          const zipBlob = await zip.generateAsync({ type: 'blob' });
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(zipBlob);
+          link.download = 'split_pages.zip';
+          link.click();
+          URL.revokeObjectURL(link.href);
+        }
+      } catch (error) {
+        alert('Error splitting: ' + error.message);
+      } finally {
+        loadingDiv.style.display = 'none';
+      }
+    });
+
+    // Select / deselect all
+    selectAllBtn.addEventListener('click', () => {
+      thumbnailContainer.querySelectorAll('.page-check').forEach(cb => cb.checked = true);
+    });
+    deselectAllBtn.addEventListener('click', () => {
+      thumbnailContainer.querySelectorAll('.page-check').forEach(cb => cb.checked = false);
+    });
+
+    // Initially disable buttons
+    enableButtons(false);
+  </script>
+
+  <!-- PWA service worker registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('Service Worker registered', reg))
+        .catch(err => console.log('Service Worker registration failed', err));
+    }
+  </script>
+</body>
+</html>
