@@ -544,30 +544,30 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    cursor: grab;
-    transition: all 0.15s;
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.2s ease,
+                border-color 0.2s ease,
+                background 0.2s ease,
+                opacity 0.2s ease;
     user-select: none;
+    will-change: transform;
+  }
+
+  /* Only reorder list items get touch-action none for drag */
+  #reorder-pages .page-item {
     touch-action: none;
+    cursor: grab;
   }
 
-  .page-item.dragging-item {
-    opacity: 0.5;
-    cursor: grabbing;
-    border-color: var(--accent);
-    background: rgba(108,99,255,0.08);
-  }
+  /* dragging-item and drag-over replaced by .is-lifted and slot indicators above */
 
-  .page-item.drag-over {
-    border-color: var(--accent);
-    transform: scale(1.01);
-  }
+  .page-handle { color: var(--text3); font-size: 18px; cursor: grab; padding: 4px; }
 
-  .page-handle { color: var(--text3); font-size: 18px; }
   .page-thumb {
-    width: 32px;
-    height: 42px;
+    width: 44px;
+    height: 58px;
     background: var(--surface3);
-    border-radius: 4px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -578,14 +578,66 @@
     border: 1px solid var(--border);
     position: relative;
     overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  /* Reorder uses bigger thumbs */
+  #reorder-pages .page-thumb {
+    width: 54px;
+    height: 72px;
+    border-radius: 7px;
   }
 
   .page-thumb canvas {
     position: absolute;
     inset: 0;
-    width: 100%;
-    height: 100%;
+    width: 100% !important;
+    height: 100% !important;
     object-fit: cover;
+    border-radius: inherit;
+  }
+
+  .page-thumb .thumb-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--surface2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  /* ─── REORDER ANIMATION ──────────────────────── */
+  .page-item {
+    will-change: transform;
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.2s ease,
+                border-color 0.2s ease,
+                background 0.2s ease,
+                opacity 0.2s ease;
+  }
+
+  .page-item.is-lifted {
+    opacity: 0.85;
+    transform: scale(1.03) translateY(-2px) !important;
+    border-color: var(--accent) !important;
+    background: rgba(108,99,255,0.12) !important;
+    box-shadow: 0 10px 32px rgba(108,99,255,0.25), 0 4px 12px rgba(0,0,0,0.4) !important;
+    cursor: grabbing;
+    z-index: 10;
+  }
+
+  .page-item.slot-above {
+    border-top: 2px solid var(--accent);
+  }
+
+  .page-item.slot-below {
+    border-bottom: 2px solid var(--accent);
+  }
+
+  /* FLIP: item leaving its old position */
+  @keyframes itemSwapIn {
+    from { opacity: 0.6; }
+    to   { opacity: 1; }
   }
 
   .page-info { flex: 1; }
@@ -720,6 +772,7 @@
 
   /* ─── SCROLLBAR ──────────────────────────────── */
   ::-webkit-scrollbar { width: 0; }
+  #split-page-strip::-webkit-scrollbar { display: none; }
 
   /* ─── SPLIT RANGES ───────────────────────────── */
   .range-list {
@@ -1177,6 +1230,13 @@
 // We load pdf-lib from a CDN at runtime using a script tag since we cannot use fetch
 </script>
 <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script>
+  // Configure PDF.js worker (use CDN worker)
+  if (typeof pdfjsLib !== 'undefined') {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+  }
+</script>
 <script>
 // ─── APP STATE ───────────────────────────────────────────────────────────────
 const state = {
@@ -1389,10 +1449,41 @@ async function splitLoad(file) {
     drop.classList.add('has-file');
     drop.innerHTML = `<span class="drop-icon">✅</span><div class="drop-title">${file.name}</div><div class="drop-hint">${state.splitPageCount} pages · ${fmtBytes(file.size)}</div>`;
 
+    // Load PDF.js for inline page preview strip
+    state.splitPdfJs = await getPdfJsDoc('split', state.splitBytes);
+
     document.getElementById('split-options').style.display = 'block';
-    addRange(); // prime with one range
+    renderSplitPageStrip();
+    addRange();
     hideLoading();
   } catch(e) { hideLoading(); toast('Could not read PDF: ' + e.message, 'error'); }
+}
+
+function renderSplitPageStrip() {
+  const existing = document.getElementById('split-page-strip');
+  if (existing) existing.remove();
+
+  const strip = document.createElement('div');
+  strip.id = 'split-page-strip';
+  strip.style.cssText = 'display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none;';
+
+  for (let i = 0; i < state.splitPageCount; i++) {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;';
+    const thumb = document.createElement('div');
+    thumb.className = 'page-thumb';
+    thumb.style.cssText = 'width:42px;height:56px;flex-shrink:0;';
+    const num = document.createElement('div');
+    num.style.cssText = 'font-size:10px;color:var(--text3);font-family:var(--mono);';
+    num.textContent = i + 1;
+    wrap.appendChild(thumb);
+    wrap.appendChild(num);
+    strip.appendChild(wrap);
+    if (state.splitPdfJs) renderThumb(state.splitPdfJs, i, thumb, 0.15);
+  }
+
+  const opts = document.getElementById('split-options');
+  opts.insertBefore(strip, opts.firstChild);
 }
 
 function splitMode(mode) {
@@ -1483,6 +1574,52 @@ async function splitDo() {
 // ═══════════════════════════════════════════════════════════════════════════════
 setupDrop('reorder-drop', files => reorderLoad(files[0]));
 
+// ─── THUMBNAIL ENGINE ─────────────────────────────────────────────────────────
+// Shared PDF.js document cache per tool
+const thumbCache = {}; // key: tool name, value: { pdfDoc, canvases: Map }
+
+async function getPdfJsDoc(toolKey, bytes) {
+  if (thumbCache[toolKey]?.pdfDoc) {
+    thumbCache[toolKey].pdfDoc.destroy().catch(()=>{});
+  }
+  thumbCache[toolKey] = { canvases: new Map() };
+  const loadingTask = pdfjsLib.getDocument({ data: bytes.slice() });
+  thumbCache[toolKey].pdfDoc = await loadingTask.promise;
+  return thumbCache[toolKey].pdfDoc;
+}
+
+async function renderThumb(pdfDoc, pageIdx, thumbEl, scale = 0.15) {
+  try {
+    const page = await pdfDoc.getPage(pageIdx + 1);
+    const viewport = page.getViewport({ scale });
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    // Swap in
+    thumbEl.innerHTML = '';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.objectFit = 'cover';
+    canvas.style.position = 'absolute';
+    canvas.style.inset = '0';
+    canvas.style.borderRadius = 'inherit';
+    thumbEl.appendChild(canvas);
+  } catch(e) {
+    thumbEl.innerHTML = `<span style="font-size:10px;color:var(--text3)">${pageIdx+1}</span>`;
+  }
+}
+
+function makeThumbEl(pageIdx, scale) {
+  const div = document.createElement('div');
+  div.className = 'page-thumb';
+  div.innerHTML = `<div class="thumb-spinner"></div>`;
+  div.dataset.pageIdx = pageIdx;
+  return div;
+}
+
+// ─── REORDER ──────────────────────────────────────────────────────────────────
 async function reorderLoad(file) {
   showLoading('Loading PDF…');
   try {
@@ -1497,6 +1634,10 @@ async function reorderLoad(file) {
     drop.classList.add('has-file');
     drop.innerHTML = `<span class="drop-icon">✅</span><div class="drop-title">${file.name}</div><div class="drop-hint">${total} pages · ${fmtBytes(file.size)}</div>`;
 
+    // Load PDF.js doc for thumbnails
+    showLoading('Generating previews…');
+    state.reorderPdfJs = await getPdfJsDoc('reorder', state.reorderBytes);
+
     renderReorderList();
     document.getElementById('reorder-actions').style.display = 'block';
     hideLoading();
@@ -1506,80 +1647,220 @@ async function reorderLoad(file) {
 function renderReorderList() {
   const list = document.getElementById('reorder-pages');
   list.innerHTML = '';
+
   state.reorderOrder.forEach((origIdx, listPos) => {
     const item = document.createElement('div');
     item.className = 'page-item';
-    item.draggable = true;
     item.dataset.pos = listPos;
+    item.dataset.origIdx = origIdx;
+
+    const thumbEl = makeThumbEl(origIdx);
+
     item.innerHTML = `
       <span class="page-handle">⠿</span>
-      <div class="page-thumb">${origIdx+1}</div>
-      <div class="page-info">
-        <div class="page-name">Page ${listPos+1}</div>
-        <div class="page-size">Original page ${origIdx+1}</div>
-      </div>
-      <button class="page-delete" onclick="reorderDeletePage(${listPos})">✕</button>
     `;
-    setupPageDrag(item, list);
+    item.appendChild(thumbEl);
+    item.insertAdjacentHTML('beforeend', `
+      <div class="page-info">
+        <div class="page-name">Page ${listPos + 1}</div>
+        <div class="page-size">Original pg. ${origIdx + 1}</div>
+      </div>
+      <button class="page-delete" data-pos="${listPos}">✕</button>
+    `);
+
+    item.querySelector('.page-delete').onclick = (e) => {
+      e.stopPropagation();
+      animatedDeletePage(+e.currentTarget.dataset.pos, item);
+    };
+
+    setupReorderDrag(item, list);
     list.appendChild(item);
+
+    // Async render thumbnail
+    if (state.reorderPdfJs) {
+      renderThumb(state.reorderPdfJs, origIdx, thumbEl, 0.18);
+    }
   });
 }
 
-let dragSrc = null;
-function setupPageDrag(item, list) {
-  item.addEventListener('dragstart', () => {
-    dragSrc = item;
-    setTimeout(() => item.classList.add('dragging-item'), 0);
-  });
-  item.addEventListener('dragend', () => {
-    item.classList.remove('dragging-item');
-    document.querySelectorAll('.page-item.drag-over').forEach(e => e.classList.remove('drag-over'));
-  });
-  item.addEventListener('dragover', e => {
-    e.preventDefault();
-    if (item !== dragSrc) item.classList.add('drag-over');
-  });
-  item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
-  item.addEventListener('drop', e => {
-    e.preventDefault();
-    item.classList.remove('drag-over');
-    if (!dragSrc || dragSrc === item) return;
-    const from = +dragSrc.dataset.pos;
-    const to   = +item.dataset.pos;
-    const order = state.reorderOrder;
-    const moved = order.splice(from,1)[0];
-    order.splice(to, 0, moved);
-    renderReorderList();
+// ─── ANIMATED REORDER DRAG (FLIP technique) ───────────────────────────────────
+let reorderDragSrc = null;
+let reorderDragSrcIdx = -1;
+let reorderHoverIdx = -1;
+
+function setupReorderDrag(item, list) {
+  // Desktop drag
+  item.setAttribute('draggable', 'true');
+
+  item.addEventListener('dragstart', (e) => {
+    reorderDragSrc = item;
+    reorderDragSrcIdx = +item.dataset.pos;
+    e.dataTransfer.effectAllowed = 'move';
+    // Snapshot all item positions before anything moves
+    snapPositions(list);
+    setTimeout(() => item.classList.add('is-lifted'), 0);
   });
 
-  // Touch drag
-  let touchY = 0;
-  item.addEventListener('touchstart', e => {
-    touchY = e.touches[0].clientY;
-    dragSrc = item;
-  }, {passive:true});
-  item.addEventListener('touchmove', e => {
+  item.addEventListener('dragend', () => {
+    item.classList.remove('is-lifted');
+    clearSlotIndicators(list);
+    reorderDragSrc = null;
+    reorderDragSrcIdx = -1;
+    reorderHoverIdx = -1;
+  });
+
+  item.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const toIdx = +item.dataset.pos;
+    if (reorderDragSrc && toIdx !== reorderHoverIdx) {
+      reorderHoverIdx = toIdx;
+      clearSlotIndicators(list);
+      const fromIdx = +reorderDragSrc.dataset.pos;
+      if (toIdx > fromIdx) item.classList.add('slot-below');
+      else item.classList.add('slot-above');
+    }
+  });
+
+  item.addEventListener('dragleave', (e) => {
+    if (!item.contains(e.relatedTarget)) {
+      item.classList.remove('slot-above', 'slot-below');
+    }
+  });
+
+  item.addEventListener('drop', (e) => {
+    e.preventDefault();
+    clearSlotIndicators(list);
+    if (!reorderDragSrc || reorderDragSrc === item) return;
+    const from = +reorderDragSrc.dataset.pos;
+    const to   = +item.dataset.pos;
+    flipReorder(list, from, to);
+  });
+
+  // ── Touch drag ──────────────────────────────────────────────────
+  let touchStartY = 0;
+  let lastTouchedEl = null;
+
+  item.addEventListener('touchstart', (e) => {
+    touchStartY = e.touches[0].clientY;
+    reorderDragSrc = item;
+    reorderDragSrcIdx = +item.dataset.pos;
+    snapPositions(list);
+    item.classList.add('is-lifted');
+  }, { passive: true });
+
+  item.addEventListener('touchmove', (e) => {
     e.preventDefault();
     const y = e.touches[0].clientY;
     const els = [...list.querySelectorAll('.page-item')];
-    els.forEach(el => {
+    let target = null;
+    for (const el of els) {
       const rect = el.getBoundingClientRect();
-      if (y > rect.top && y < rect.bottom && el !== dragSrc) {
-        const from = +dragSrc.dataset.pos;
-        const to = +el.dataset.pos;
-        const order = state.reorderOrder;
-        const moved = order.splice(from,1)[0];
-        order.splice(to,0,moved);
-        renderReorderList();
-        dragSrc = list.children[to];
+      if (y >= rect.top && y <= rect.bottom && el !== reorderDragSrc) {
+        target = el;
+        break;
       }
-    });
-  }, {passive:false});
+    }
+    if (target && target !== lastTouchedEl) {
+      lastTouchedEl = target;
+      clearSlotIndicators(list);
+      const from = +reorderDragSrc.dataset.pos;
+      const to = +target.dataset.pos;
+      if (to > from) target.classList.add('slot-below');
+      else target.classList.add('slot-above');
+    }
+  }, { passive: false });
+
+  item.addEventListener('touchend', () => {
+    item.classList.remove('is-lifted');
+    clearSlotIndicators(list);
+    if (lastTouchedEl && lastTouchedEl !== item) {
+      const from = +item.dataset.pos;
+      const to = +lastTouchedEl.dataset.pos;
+      flipReorder(list, from, to);
+    }
+    reorderDragSrc = null;
+    lastTouchedEl = null;
+  });
 }
 
-function reorderDeletePage(pos) {
-  state.reorderOrder.splice(pos,1);
+// Snapshot current item bounding rects before DOM mutation
+let _snapshots = new Map();
+function snapPositions(list) {
+  _snapshots.clear();
+  [...list.querySelectorAll('.page-item')].forEach(el => {
+    _snapshots.set(el, el.getBoundingClientRect().top);
+  });
+}
+
+function flipReorder(list, from, to) {
+  if (from === to) return;
+
+  // Snapshot BEFORE positions
+  const items = [...list.querySelectorAll('.page-item')];
+  const beforeTops = new Map();
+  items.forEach(el => beforeTops.set(el, el.getBoundingClientRect().top));
+
+  // Mutate state
+  const order = state.reorderOrder;
+  const moved = order.splice(from, 1)[0];
+  order.splice(to, 0, moved);
+
+  // Re-render DOM
   renderReorderList();
+
+  // FLIP: animate new items from their old positions
+  const newItems = [...list.querySelectorAll('.page-item')];
+  newItems.forEach((el, i) => {
+    const newTop = el.getBoundingClientRect().top;
+    // Find the matching old element by origIdx
+    const origIdx = +el.dataset.origIdx;
+    // Find old item that had this origIdx
+    const oldEl = items.find(old => +old.dataset.origIdx === origIdx);
+    if (!oldEl) return;
+    const oldTop = beforeTops.get(oldEl) ?? newTop;
+    const delta = oldTop - newTop;
+    if (Math.abs(delta) < 1) return;
+    // Apply instant offset, then animate to 0
+    el.style.transition = 'none';
+    el.style.transform = `translateY(${delta}px)`;
+    requestAnimationFrame(() => {
+      el.style.transition = 'transform 0.32s cubic-bezier(0.34, 1.4, 0.64, 1)';
+      el.style.transform = 'translateY(0)';
+    });
+  });
+
+  // Flash the moved item
+  const movedEl = newItems[to];
+  if (movedEl) {
+    movedEl.style.transition = 'none';
+    movedEl.style.background = 'rgba(108,99,255,0.18)';
+    movedEl.style.borderColor = 'var(--accent)';
+    requestAnimationFrame(() => {
+      movedEl.style.transition = 'background 0.5s ease, border-color 0.5s ease, transform 0.32s cubic-bezier(0.34,1.4,0.64,1)';
+      movedEl.style.background = '';
+      movedEl.style.borderColor = '';
+    });
+  }
+}
+
+function animatedDeletePage(pos, itemEl) {
+  itemEl.style.transition = 'opacity 0.2s ease, transform 0.2s ease, max-height 0.25s ease 0.1s';
+  itemEl.style.opacity = '0';
+  itemEl.style.transform = 'scale(0.93)';
+  itemEl.style.maxHeight = '0';
+  itemEl.style.overflow = 'hidden';
+  itemEl.style.padding = '0';
+  setTimeout(() => {
+    state.reorderOrder.splice(pos, 1);
+    renderReorderList();
+  }, 300);
+}
+
+function clearSlotIndicators(list) {
+  [...list.querySelectorAll('.page-item')].forEach(el => {
+    el.classList.remove('slot-above', 'slot-below');
+  });
 }
 
 async function reorderDo() {
@@ -1745,6 +2026,9 @@ async function deleteLoad(file) {
     drop.innerHTML = `<span class="drop-icon">✅</span><div class="drop-title">${file.name}</div><div class="drop-hint">${state.deletePageCount} pages — tap to change file</div>`;
     drop.onclick = () => document.getElementById('delete-input').click();
 
+    showLoading('Generating previews…');
+    state.deletePdfJs = await getPdfJsDoc('delete', state.deleteBytes);
+
     renderDeleteList();
     document.getElementById('delete-actions').style.display = 'block';
     hideLoading();
@@ -1763,14 +2047,18 @@ function renderDeleteList() {
       item.style.borderColor = 'var(--danger)';
       item.style.background = 'rgba(255,92,92,0.06)';
     }
-    item.innerHTML = `
-      <div class="page-thumb">${i+1}</div>
+
+    const thumbEl = makeThumbEl(i);
+
+    item.appendChild(thumbEl);
+    item.insertAdjacentHTML('beforeend', `
       <div class="page-info">
-        <div class="page-name">Page ${i+1}</div>
-        <div class="page-size">${marked ? '🗑 Marked for removal' : 'Tap to mark'}</div>
+        <div class="page-name">Page ${i + 1}</div>
+        <div class="page-size" style="color:${marked ? 'var(--danger)' : ''}">${marked ? '🗑 Marked for removal' : 'Tap to mark'}</div>
       </div>
-      <div style="color:${marked ? 'var(--danger)' : 'var(--text3)'}; font-size:20px">${marked ? '✕' : '○'}</div>
-    `;
+      <div style="color:${marked ? 'var(--danger)' : 'var(--text3)'}; font-size:20px; transition: all 0.2s">${marked ? '✕' : '○'}</div>
+    `);
+
     item.onclick = () => {
       if (state.deletedPages.has(i)) state.deletedPages.delete(i);
       else state.deletedPages.add(i);
@@ -1778,6 +2066,10 @@ function renderDeleteList() {
       updateDeleteBtn();
     };
     list.appendChild(item);
+
+    if (state.deletePdfJs) {
+      renderThumb(state.deletePdfJs, i, thumbEl, 0.15);
+    }
   }
 }
 
